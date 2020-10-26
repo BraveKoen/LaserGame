@@ -5,11 +5,10 @@ class sendControl : public rtos::task<>{
     enum state_s       = {INACTIVE, SENDING};
 
 private:
+    auto ir = hwlib::target::d2_36kHz();
     state_s state = INACTIVE;
 
     rtos::channel messageChannel;
-
-    IrLed irled;
     RedLed redLed;
 public:
     sendControl(IrLed irLed, RedLed, redLed);
