@@ -12,7 +12,7 @@
 SOURCES :=
 
 # header files in this project
-HEADERS := sendControl.hpp
+HEADERS := SendControl.hpp IrLed.hpp RedLed.hpp
 
 # other places to look for files for this project
 SEARCH  := 

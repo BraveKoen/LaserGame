@@ -1,6 +1,6 @@
 #include "hwlib.hpp"
 #include "rtos.hpp"
-#include "sendControl.hpp"
+#include "SendControl.hpp"
 
 
 

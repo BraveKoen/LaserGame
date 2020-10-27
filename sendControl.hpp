@@ -1,38 +1,10 @@
 #include "hwlib.hpp"
 #include "rtos.hpp"
+#include "RedLed.hpp"
+#include "IrLed.hpp"
 
 
-
-class IrLed{
-private:
-    hwlib::target::d2_36kHz irLed;
-public:
-    IrLed():
-    irLed(hwlib::target::d2_36kHz())
-    {}
-
-void write(int state){
-    irLed.write(state);
-    irLed.flush();
-}
-};
-
-class RedLed{
-private:
-    hwlib::target::pin_out redled;
-
-public:
-    RedLed(hwlib::target::pins pin):
-    redled(hwlib::target::pin_out( pin)){}
-
-void write(bool state){
-    redled.write(state);
-}
-};
-
-
-
-class sendControl : public rtos::task<>{
+class SendControl : public rtos::task<>{
 
 enum state_t {INACTIVE, SENDING};
 
@@ -43,7 +15,7 @@ private:
     RedLed redLed;
     IrLed irLed;
 public:
-    sendControl(const char * name):
+    SendControl(const char * name):
     task( name ),
     messageChannel(this, "messageChannel"),
     redLed( hwlib::target::pins::d7 ),
