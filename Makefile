@@ -12,7 +12,7 @@
 SOURCES :=
 
 # header files in this project
-HEADERS := shotControl.hpp
+HEADERS := sendControl.hpp
 
 # other places to look for files for this project
 SEARCH  := 
