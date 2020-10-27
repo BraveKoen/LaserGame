@@ -14,7 +14,7 @@ int main( void ){
    
    hwlib::wait_ms(1000);
 
-   auto sendTest = sendControl("sendTest");
-   sendTest.sendMesasge(0b1111111111111111);
+   auto sendTest = SendControl("sendTest");
+   sendTest.sendMessage(0b1111111111111111);
    rtos::run();
 }

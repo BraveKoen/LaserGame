@@ -22,7 +22,7 @@ public:
     irLed()
     {}
 
-    void sendMesasge(uint_fast16_t message){
+    void sendMessage(uint_fast16_t message){
         messageChannel.write(message);
     }
 
