@@ -10,43 +10,90 @@ private:
 
     rtos::channel messageChannel;
     RedLed redLed;
+    IrLed irLed;
 public:
-    sendControl(IrLed irLed, RedLed, redLed);
+    sendControl(RedLed redLed):
+    redLed(redLed)
+    {}
 
     void sendMesasge(uint_fast16_t message){
+        messageChannel.write(message);
+    }
 
+private:
+    void main(){
+        uint_fast16_t message;
+        unsigned int counter;
+
+        bool bit;
+        for(;;){
+            switch(state){
+                case INACTIVE:
+                
+                auto evt = wait(messageChannel);
+                if(evt=messageChannel){
+                    message = messageChannel.read(); 
+                    counter = 0;
+
+                    state = SENDING;
+                }
+                break;
+
+                case SENDING:
+                bit = message & (0b1<<16);
+                message = message<<1;
+                if(bit == 1){
+                    redLed.write(1);
+                    irLed.write(1);
+                    hwlib::wait_us(1600);
+                    irLed.write(0);
+                    hwlib::wait_us(800);
+                    redLed.write(0);
+                }else{
+                    redLed.write(1);
+                    irLed.write(1);
+                    hwlib::wait_us(800);
+                    irLed.write(0);
+                    hwlib::wait_us(1600);
+                    redLed.write(0);
+                }
+                if(counter < 16){
+                    counter++;
+                }else{
+                    state = INACTIVE;
+                }
+                break;
+                default: break;
+            }
+        }
     }
 
 };
 
+class IrLed{
+private:
+    auto ir = hwlib::target::d2_36kHz();
 
-
-int main( void ){	
-   
-   // IR output LED
-   auto ir = hwlib::target::d2_36kHz();
-   
-   // red output LED
-   auto red = hwlib::target::pin_out( hwlib::target::pins::d7);
-   
-   // switch which enables the 36 kHz output
-   auto sw = hwlib::target::pin_in( hwlib::target::pins::d43 );
-   
-   // when the switch is pressed, 
-   // repeat sending 1 ms signal and 1 ms silence
-   // and show this on the LED
-   for(;;){
-      hwlib::wait_ms( 1 ); 
-      
-      sw.refresh();
-      ir.write( ! sw.read() );
-      red.write( ! sw.read() );
-      ir.flush();
-      red.flush();
-      
-      hwlib::wait_ms( 1 );
-      ir.write( 0 );
-      ir.flush();
-   }
+public:
+void write(int state){
+    ir.write(state);
+    ir.flush();
 }
+};
+
+class RedLed{
+private:
+    hwlib::pin_out & led;
+
+public:
+    RedLed(hwlib::pin_out &led):
+    led(led){}
+
+void write(bool state){
+    led.write(state);
+    led.flush();
+}
+};
+
+
 
