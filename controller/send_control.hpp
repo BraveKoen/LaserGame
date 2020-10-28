@@ -1,7 +1,7 @@
 #include "hwlib.hpp"
 #include "rtos.hpp"
-#include "RedLed.hpp"
-#include "IrLed.hpp"
+#include "../boundary/red_led.hpp"
+#include "../boundary/ir_led.hpp"
 
 
 class SendControl : public rtos::task<>{
