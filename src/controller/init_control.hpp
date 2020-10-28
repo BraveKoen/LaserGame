@@ -4,10 +4,11 @@
 #include "hwlib.hpp"
 #include "rtos.hpp"
 #include "game_info.hpp"
-#include "transfer_control.hpp"
 #include "game_time_control.hpp"
-#include "keypad.hpp"
-#include "display.hpp"
+#include "transfer_control.hpp"
+#include "send_control.hpp"
+#include "boundary/keypad.hpp"
+#include "boundary/display.hpp"
 
 class InitControl:
     public rtos::task<>,
