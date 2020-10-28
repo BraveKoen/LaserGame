@@ -201,6 +201,7 @@ private:
 
         if (buttonID == 'D') {
             transferControl.transferCommand();
+            // mainState = MainState::CommandSelection;
         } else if (buttonID == 'C') {
             message = "Enter speeltijd (1-15): ";
             minTime = 1;
