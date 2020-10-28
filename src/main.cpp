@@ -1,8 +1,6 @@
 #include "hwlib.hpp"
 #include "rtos.hpp"
-#include "SendControl.hpp"
-
-
+#include "controller/send_control.hpp"
 
 extern unsigned char bmptk_stack[ 81920 ];
 
