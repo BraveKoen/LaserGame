@@ -30,17 +30,27 @@ public:
     void buttonPressed(int buttonID){
         buttonChannel.write(buttonID);
     }
-    void enableFlag(){
+    void setFlag(){
         flagStart.set();
     }
 
 private:
     void main(){
+        unsigned int weapon;
+        unsigned int playerID;
         for(;;){
             switch(state){
                 case INACTIVE:
                     wait(flagStart);
-                    unsigned int weapon = gameInfo.getWeapon();
-                    unsigned int playerID = gameInfo.getPlayerID();
-
+                    weapon = gameInfo.getWeapon();
+                    playerID = gameInfo.getPlayerID();
+                    state = ACTIVE;
+                case ACTIVE:
+                    button = buttonChannel.read();
+                    if(button == '*' || button == 'T'){
+                        sendControl.sendMessage(0b0+(playerID<<10)+(weapon<<5)+(playerID ^weapon));
+                    }
+            }
+        }
+    }
 };
