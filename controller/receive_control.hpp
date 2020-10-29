@@ -3,7 +3,7 @@
 
 #include "hwlib.hpp"
 #include "rtos.hpp"
-#include "IrReceiver.hpp"
+#include "ir_receiver.hpp"
 
 class ReceiveControl : public rtos::task<>{
     enum states {WAITING, RECEIVINGMESSAGE};
@@ -15,15 +15,15 @@ private:
     rtos::timer timer_4ms;
 
     IrReceiver irReceiver;
-    Decoder decoder;
+    //Decoder decoder;
 
 public:
     ReceiveControl():
     task("ReceiveTask"),
     clock_200us(this, 200, "200 us clock"), 
     timer_4ms(this, "4 ms timer"),
-    irReceiver(hwlib::target::pins::d8),
-    decoder()
+    irReceiver(hwlib::target::pins::d8)//,
+    //decoder()
     {}
 
 private:
@@ -67,8 +67,8 @@ private:
                                 timer_4ms.set(4'000);
                                 signalHigh=0;
                             }else{
-                                //hwlib::cout << "Message: " << message << "\n"; //also comment out all decoder related things if that hasnt been made yet.
-                                decoder.decode(message);
+                                hwlib::cout << "Message: " << message << "\n"; //also comment out all decoder related things if that hasnt been made yet.
+                                //decoder.decode(message);
                                 state = WAITING;
                             }
                         }            
@@ -81,4 +81,4 @@ private:
     }
 };
 
-#endif
+#endif // RECEIVE_CONTROL_HPP
