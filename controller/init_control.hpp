@@ -22,32 +22,6 @@ private:
     GameTimeControl& gameTimeControl;
     Keypad& keypad;
     Display& display;
-
-    using buttonType = int;
-    rtos::channel<buttonType, 16> buttonChannel;
-    rtos::clock countdownClock; // update name in CCD accordingly
-
-    enum class MainState {
-        ProcessInput,
-        DistributeSettings,
-        GameInProgress,
-        CommandSelection
-    };
-    enum class SubState {
-        RequestInput,
-        AccumulateInput
-    };
-    MainState mainstate;
-    SubState subState;
-
-    char const *message;
-    int minTime;
-    int maxTime;
-    int gameTime;
-    int time;
-    int countdown;
-    bool confGameTime;
-    bool countdownActive;
 public:
     InitControl(
         char const* taskName,
@@ -77,6 +51,32 @@ public:
         buttonChannel.write(buttonID);
     }
 private:
+    using buttonType = int;
+    rtos::channel<buttonType, 16> buttonChannel;
+    rtos::clock countdownClock; // update name in CCD accordingly
+
+    enum class MainState {
+        ProcessInput,
+        DistributeSettings,
+        GameInProgress,
+        CommandSelection
+    };
+    enum class SubState {
+        RequestInput,
+        AccumulateInput
+    };
+    MainState mainstate;
+    SubState subState;
+
+    char const *message;
+    int minTime;
+    int maxTime;
+    int gameTime;
+    int time;
+    int countdown;
+    bool confGameTime;
+    bool countdownActive;
+
     void processInput(
         char const *message,
         int minTime,
