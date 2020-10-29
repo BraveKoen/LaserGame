@@ -17,7 +17,7 @@ public:
    
     void setPlayerID(int id){
        PlayerID = id;
-    }
+    }//stupid
 
     int getPlayerID(){
         return PlayerID;
