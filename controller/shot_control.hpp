@@ -1,3 +1,6 @@
+#ifndef SHOT_CONTROL_HPP
+#define SHOT_CONTROL_HPP
+
 #include "hwlib.hpp"
 #include "rtos.hpp"
 #include "send_control.hpp"
@@ -76,3 +79,5 @@ private:
     }
     //verrandering
 };
+
+#endif //SHOT_CONTROL_HPP
