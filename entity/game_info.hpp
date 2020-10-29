@@ -11,6 +11,7 @@ private:
     unsigned int gameTime;
     unsigned int weaponType;
     int hits[100][2];
+    unsigned int count;
 
 public:
     GameInfo():
@@ -32,4 +33,10 @@ public:
     void setTime(int time) { gameTime.write(time); }
     
     int getTime() { return gameTime.read(); }
+
+    void registerHits(uint8_t playerID,uint8_t damage){
+        hits[count][0] = playerID;
+        hits[count][1] = damage;
+        count++;
+    }
 };
