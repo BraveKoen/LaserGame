@@ -67,6 +67,7 @@ private:
                                 timer_4ms.set(4'000);
                                 signalHigh=0;
                             }else{
+                                //hwlib::cout << "Message: " << message << "\n"; //also comment out all decoder related things if that hasnt been made yet.
                                 decoder.decode(message);
                                 state = WAITING;
                             }
