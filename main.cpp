@@ -12,7 +12,7 @@ int main( void ){
    
    hwlib::wait_ms(1000);
 
-   auto sendTest = SendControl("sendTest");
-   sendTest.sendMessage(0b1111111111111111);
+   auto sendTest = SendControl();
+   sendTest.sendMessage(0b0000011111);
    rtos::run();
 }
