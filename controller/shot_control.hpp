@@ -11,23 +11,31 @@ private:
     state_t state = INACTIVE;
 
     rtos::channel<int,10> buttonChannel;
-    rtos::flag StartFlag;
-    rtos::flag GameOverFlag;
+    rtos::flag startFlag;
+    rtos::flag gameOverFlag;
 
-    GameInfo gameInfo;
-    Keypad keypad;
+    SendControl& sendControl;
+    GameInfo& gameInfo;
+    Button& keypad;
     Button trigger;
     
 public:
-    ShotControl():
+    ShotControl(Button& keypad, ButtonHandler& handler, GameInfo& gameInfo, SendControl& sendControl):
     task( "ShotTask" ),
+    sendControl(sendControl),
+    gameInfo(gameInfo),
+    keypad(keypad),
+    trigger(),
     buttonChannel( this, "buttonChannel" ),
-    gameInfo( gameInfo& ),
-    keypad( keypad ),
-    trigger( trigger ),
-    StartFlag( this, "StartFlag" ),
-    GameOverFlag(this, "GameOverFlag")
-    { 
+    startFlag( this, "StartFlag" ),
+    gameOverFlag(this, "GameOverFlag")
+    {
+        keypad.addButtonListener(this);
+        trigger.addButtonListener(this);
+        //Unsure if multiple classes should add the same keypad
+        handler.addButton(keypad);
+        handler.addButton(trigger);
+
     }
 
     void buttonPressed(int buttonID){
@@ -47,23 +55,24 @@ private:
         for(;;){
             switch(state){
                 case INACTIVE:
-                    wait(StartFlag);
+                    wait(startFlag);
                     weapon = gameInfo.getWeapon();
                     playerID = gameInfo.getPlayerID();
                     state = ACTIVE;
                 case ACTIVE:
-                    auto event = wait(buttonChannel + FlagGameOver);
+                    auto event = wait(buttonChannel + gameOverFlag);
                     if(event == buttonChannel){
                       button = buttonChannel.read();
                       if (button == '*' || button == 'T'){
                         sendControl.sendMessage((playerID<<5)+ weapon );
                         break;
                       }
-                    }else if (event == FlagGameOver) {
+                    } else if (event == gameOverFlag) {
                       state = INACTIVE;
                       break;
                     }
             }
         }
     }
+    //verrandering
 };
