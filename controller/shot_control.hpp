@@ -30,8 +30,8 @@ public:
     keypad(keypad),
     trigger(),
     buttonChannel( this, "buttonChannel" ),
-    startFlag( this, "StartFlag" ),
-    gameOverFlag(this, "GameOverFlag")
+    startFlag( this, "startFlag" ),
+    gameOverFlag(this, "gameOverFlag")
     {
         keypad.addButtonListener(this);
         trigger.addButtonListener(this);
