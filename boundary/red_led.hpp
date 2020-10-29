@@ -11,7 +11,7 @@ public:
 
 void write(bool state){
     redled.write(state);
-}
+  }
 };
 
 #endif
