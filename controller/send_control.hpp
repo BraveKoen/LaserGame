@@ -57,7 +57,7 @@ private:
                         irLed.write(0);
                         hwlib::wait_us(1600);
                     }
-                    if(counter < 15){
+                    if(counter < 16){
                         counter++;
                     }else{
                         state = INACTIVE;
