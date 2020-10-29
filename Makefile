@@ -12,7 +12,7 @@
 SOURCES :=
 
 # header files in this project
-HEADERS := send_control.hpp ir_led.hpp red_led.hpp
+HEADERS := send_control.hpp ir_led.hpp red_led.hpp receive_control.hpp ir_receiver.hpp
 
 # other places to look for files for this project
 SEARCH  := controller boundary

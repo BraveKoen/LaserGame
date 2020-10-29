@@ -14,4 +14,4 @@ void write(bool state){
 }
 };
 
-#endif
+#endif // RED_LED_HPP

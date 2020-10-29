@@ -13,4 +13,4 @@ class IrLed {
     irLed.flush();
   }
 };
-#endif
+#endif // IR_LED_HPP
