@@ -1,6 +1,6 @@
 #include "hwlib.hpp"
 #include "rtos.hpp"
-#include "SendControl.hpp"
+#include "send_control.hpp"
 
 
 class ShotControl : public rtos::task<>{
@@ -11,7 +11,8 @@ private:
     state_t state = INACTIVE;
 
     rtos::channel<int,10> buttonChannel;
-    rtos::flag flagStart;
+    rtos::flag StartFlag;
+    rtos::flag GameOverFlag;
 
     GameInfo gameInfo;
     Keypad keypad;
@@ -24,14 +25,19 @@ public:
     gameInfo( gameInfo& ),
     keypad( keypad ),
     trigger( trigger ),
-    enable_flag( this, "flagStart" )
-    {}
+    StartFlag( this, "StartFlag" ),
+    GameOverFlag(this, "GameOverFlag")
+    { 
+    }
 
     void buttonPressed(int buttonID){
         buttonChannel.write(buttonID);
     }
-    void setFlag(){
-        flagStart.set();
+    void start(){
+        StartFlag.set();
+    }
+    void gameOver(){
+        GameOverFlag.set();
     }
 
 private:
@@ -41,14 +47,21 @@ private:
         for(;;){
             switch(state){
                 case INACTIVE:
-                    wait(flagStart);
+                    wait(StartFlag);
                     weapon = gameInfo.getWeapon();
                     playerID = gameInfo.getPlayerID();
                     state = ACTIVE;
                 case ACTIVE:
-                    button = buttonChannel.read();
-                    if(button == '*' || button == 'T'){
-                        sendControl.sendMessage(0b0+(playerID<<10)+(weapon<<5)+(playerID ^weapon));
+                    auto event = wait(buttonChannel + FlagGameOver);
+                    if(event == buttonChannel){
+                      button = buttonChannel.read();
+                      if (button == '*' || button == 'T'){
+                        sendControl.sendMessage((playerID<<5)+ weapon );
+                        break;
+                      }
+                    }else if (event == FlagGameOver) {
+                      state = INACTIVE;
+                      break;
                     }
             }
         }
