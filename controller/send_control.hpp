@@ -1,7 +1,7 @@
 #include "hwlib.hpp"
 #include "rtos.hpp"
-#include "RedLed.hpp"
-#include "IrLed.hpp"
+#include "../boundary/red_led.hpp"
+#include "../boundary/ir_led.hpp"
 
 
 class SendControl : public rtos::task<>{
@@ -15,9 +15,9 @@ private:
     RedLed redLed;
     IrLed irLed;
 public:
-    SendControl(const char * name):
-    task( name ),
-    messageChannel(this, "messageChannel"),
+    SendControl():
+    task( "SendControl" ),
+    messageChannel( this, "messageChannel" ),
     redLed( hwlib::target::pins::d7 ),
     irLed()
     {}
@@ -36,6 +36,8 @@ private:
             switch(state){
                 case INACTIVE:
                     message = messageChannel.read();
+                    message = message<<5;
+                    message += ((message>>10) & 0b11111) ^ ((message>>5) & 0b11111);
                     counter = 0;
                     state = SENDING;
                     break;
