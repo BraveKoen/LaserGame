@@ -1,3 +1,6 @@
+#ifndef RED_LED_HPP
+#define RED_LED_HPP
+
 class RedLed{
 private:
     hwlib::target::pin_out redled;
@@ -8,5 +11,7 @@ public:
 
 void write(bool state){
     redled.write(state);
-}
+  }
 };
+
+#endif

@@ -15,9 +15,9 @@ private:
     RedLed redLed;
     IrLed irLed;
 public:
-    SendControl(const char * name):
-    task( name ),
-    messageChannel(this, "messageChannel"),
+    SendControl():
+    task( "SendControl" ),
+    messageChannel( this, "messageChannel" ),
     redLed( hwlib::target::pins::d7 ),
     irLed()
     {}
@@ -36,6 +36,8 @@ private:
             switch(state){
                 case INACTIVE:
                     message = messageChannel.read();
+                    message = message<<5;
+                    message += ((message>>10) & 0b11111) ^ ((message>>5) & 0b11111);
                     counter = 0;
                     state = SENDING;
                     break;
@@ -55,7 +57,7 @@ private:
                         irLed.write(0);
                         hwlib::wait_us(1600);
                     }
-                    if(counter < 15){
+                    if(counter < 16){
                         counter++;
                     }else{
                         state = INACTIVE;

@@ -12,11 +12,10 @@
 SOURCES :=
 
 # header files in this project
-HEADERS := send_control.hpp ir_led.hpp red_led.hpp 
-#shot_control.hpp
+HEADERS := send_control.hpp ir_led.hpp red_led.hpp shot_control.hpp
 
 # other places to look for files for this project
-SEARCH  := boundary controller
+SEARCH  := controller boundary
 
 # set RELATIVE to the next higher directory and defer to the Makefile.due
 RELATIVE := $(RELATIVE)../
