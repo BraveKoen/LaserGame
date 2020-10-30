@@ -32,7 +32,7 @@ public:
         task("ReceiveHitControl"),
         gameInfo(gameInfo),
         sendControl(sendControl),
-        buzzer(buzzer),
+        buzzer(hwlib::target::pins::d9),
         display(display)
     {}
 
