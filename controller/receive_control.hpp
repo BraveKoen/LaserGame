@@ -18,12 +18,12 @@ private:
     Decoder decoder;
 
 public:
-    ReceiveControl():
+    ReceiveControl(ReceiveHitControl & receiveHitControl, GameTimeControl & gameTimeControl, RegisterControl & registerControl, TransferControl & transferControl):
     task("ReceiveTask"),
     clock_200us(this, 200, "200 us clock"), 
     timer_4ms(this, "4 ms timer"),
     irReceiver(hwlib::target::pins::d8),
-    decoder()
+    decoder(receiveHitControl, gameTimeControl, registerControl, transferControl)
     {}
 
 private:
