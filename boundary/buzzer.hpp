@@ -44,12 +44,17 @@ private:
                         break;
                     }
                 case ACTIVE:
-                    wait(clock_1500us);
-                    if(buzzerState == true){
-                        buzzerState = false;
-                        buzzer.write(true);
-                    }else{
-                        buzzerState = true;
+                    auto event =wait(clock_1500us + playSoundFlag);
+                    if(event = clock_1500us){
+                        if(buzzerState == true){
+                            buzzerState = false;
+                            buzzer.write(true);
+                        }else{
+                            buzzerState = true;
+                            buzzer.write(false);
+                        }
+                    }if else(event = playSoundFlag){
+                        state = INACTIVE;
                         buzzer.write(false);
                     }
                     break;
