@@ -1,5 +1,5 @@
-#ifndef INIT_CONTROL_HPP
-#define INIT_CONTROL_HPP
+#ifndef GAME_TIME_CONTROL_HPP
+#define GAME_TIME_CONTROL_HPP
 
 #include "game_info.hpp"
 #include "init_control.hpp"
