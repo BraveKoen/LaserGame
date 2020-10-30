@@ -235,8 +235,6 @@ private:
             "D - Lokaal\n    transferen\n"
             "* - Transfer\n    versturen");
     }
-public:
-
 };
 
 #endif // INIT_CONTROL_HPP
