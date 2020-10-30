@@ -13,7 +13,7 @@ private:
     states state = INACTIVE;
     subStates subState = DEFAULT;
 
-    std::array<uint_fast8_t, 2> damageForType = {10, 25};
+    std::array<uint_fast8_t, 8> damageForType = {10, 25, 25, 25, 25, 25, 25, 25};
 
     rtos::channel<uint_fast16_t, 10> dataInChannel;
 
@@ -73,7 +73,7 @@ private:
                                         state = INACTIVE;
                                     }else if(((data>>8) & 0b11)==0b11){ //Check for shot command.
                                         //receiveHitControl.hitReceived(((data>>10) & 0b11111), damageForType[(data>>5) & 0b111)]);
-                                        hwlib::cout<<"Hitreceived, PlayerID: "<<((data>>10) & 0b11111)<<" Damage: "<<damageForType[(data>>5) & 0b111)]<<"\n";
+                                        hwlib::cout<<"Hitreceived, PlayerID: "<<((data>>10) & 0b11111)<<" Damage: "<<damageForType[((data>>5) & 0b111)]<<"\n";
                                     } //More commands can be added here, would be in format 0b0'ppppp'10ccc'xxxxx. Where p is player number, c is command(number) and x is the XOR of ppppp and 10ccc
                                 }
                             }
