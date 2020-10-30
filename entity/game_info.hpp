@@ -20,7 +20,6 @@ private:
 
 public:
     GameInfo():
-        task("GameInfo"),
         playerIDPool("playerIDPool"),
         gameTimePool("gameTimePool"),
         weaponTypePool("weaponTypePool")
