@@ -9,9 +9,9 @@ public:
     RedLed(hwlib::target::pins pin):
     redled(hwlib::target::pin_out( pin)){}
 
-void write(bool state){
-    redled.write(state);
-  }
+    void write(bool state){
+        redled.write(state);
+    }
 };
 
-#endif
+#endif // RED_LED_HPP
