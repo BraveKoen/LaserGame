@@ -1,24 +1,29 @@
+#ifndef GAME_INFO_HPP
+#define GAME_INFO_HPP
+
 #include "hwlib.hpp"
 #include "rtos.hpp"
+#include <array>
 
-class GameInfo : public rtos::task<> {
+class GameInfo{
 private:
-    rtos::pool<int> playerID;
-    rtos::pool<int> gameTime;
-    rtos::pool<int> weaponType;
+    rtos::pool<int> playerIDPool;
+    rtos::pool<int> gameTimePool;
+    rtos::pool<int> weaponTypePool;
+    rtos::pool<std::array<std::array<uint8_t, 2>,100>> hits;
 
-    unsigned int PlayerID;
-    unsigned int gameTime;
-    unsigned int weaponType;
-    int hits[100][2];
-    unsigned int count;
+    //unsigned int PlayerID;
+    //unsigned int gameTime;
+    //unsigned int weaponType;
+    //int hits[100][2];
+    unsigned int count = 0;
 
 public:
     GameInfo():
         task("GameInfo"),
-        playerID("playerIDPool"),
-        gameTime("gameTimePool"),
-        weaponType("weaponTypePool")
+        playerIDPool("playerIDPool"),
+        gameTimePool("gameTimePool"),
+        weaponTypePool("weaponTypePool")
 
     {}
 
@@ -40,3 +45,5 @@ public:
         count++;
     }
 };
+
+#endif
