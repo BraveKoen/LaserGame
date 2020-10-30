@@ -69,9 +69,8 @@ public:
     void main() override {
         for (state = State::Inactive;;) {
             switch (state) {
-            case State::Inactive       : inactive()       ; break;
-            case State::Clearing       : clearing()       ; break;
-            case State::WritingMessage : writingMessage() ; break;
+            case State::Inactive: inactive(); break;
+            case State::Clearing: clearing(); break;
             default: break;
             }
         }
@@ -80,7 +79,6 @@ private:
     enum class State {
         Inactive,
         Clearing
-        WritingMessage
     };
     // this type of construction ultimately saves
     // some additional pools and an extra flush
@@ -102,10 +100,8 @@ private:
         } type;
     };
     State state;
-    MessageType message;
 
-    // using messageType = char const*;
-    rtos::pool<messageType> messagePool;
+    rtos::pool<MessageType> messagePool;
     rtos::flag messageFlag;
     rtos::flag clearFlag;
 
@@ -121,8 +117,7 @@ private:
         if (event == clearFlag) {
             state = State::Clearing;
         } else if (event == messageFlag) {
-            message = messagePool.read();
-            state = State::WritingMessage;
+            writeMessage();
         }
     }
 
@@ -131,13 +126,15 @@ private:
         state = State::Inactive;
     }
 
-    void writingMessage() {
+    void writeMessage() {
         // note: currently, there are no wait calls active at
         // glcd_i2c's flush implementation
         //
         // to-do: edit flush() function of glcd_oled_i2c_128x64_buffered class
         // file: hwlib-glcd-oled.hpp
         // line: 459
+        auto const message = messagePool.read();
+
         switch (messageType.tag) {
         case MessageType::Tag::String:
             terminal << message.type.string;
