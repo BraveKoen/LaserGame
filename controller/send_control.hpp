@@ -1,3 +1,6 @@
+#ifndef SEND_CONTROL_HPP
+#define SEND_CONTROL_HPP
+
 #include "hwlib.hpp"
 #include "rtos.hpp"
 #include "../boundary/red_led.hpp"
@@ -70,3 +73,5 @@ private:
         }
     }
 };
+
+#endif // SEND_CONTROL_HPP

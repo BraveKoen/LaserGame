@@ -15,4 +15,4 @@ public:
     }
 };
 
-#endif
+#endif // IRRECEIVER_HPP

@@ -4,6 +4,7 @@
 #include "controller/receive_control.hpp"
 #include "boundary/ir_receiver.hpp"
 #include "controller/decoder.hpp"
+#include "controller/shot_control.hpp"
 
 extern unsigned char bmptk_stack[ 81920 ];
 
@@ -22,6 +23,5 @@ int main( void ){
    sendTest.sendMessage(0b0'00001);
 
    auto receive_control = ReceiveControl();
-
    rtos::run();
 }

@@ -20,46 +20,19 @@ private:
     SendControl& sendControl;
     TransferControl& transferControl;
     GameTimeControl& gameTimeControl;
-    Keypad& keypad;
+    Button& keypad;
     Display& display;
-
-    using buttonType = int;
-    rtos::channel<buttonType, 16> buttonChannel;
-    rtos::clock countdownClock; // update name in CCD accordingly
-
-    enum class MainState {
-        ProcessInput,
-        DistributeSettings,
-        GameInProgress,
-        CommandSelection
-    };
-    enum class SubState {
-        RequestInput,
-        AccumulateInput
-    };
-    MainState mainstate;
-    SubState subState;
-
-    char const *message;
-    int minTime;
-    int maxTime;
-    int gameTime;
-    int time;
-    int countdown;
-    bool confGameTime;
-    bool countdownActive;
 public:
     InitControl(
-        char const* taskName,
         GameInfo& gameInfo,
         SendControl& sendControl,
         TransferControl& transferControl,
         GameTimeControl& gameTimeControl,
-        Keypad& keypad,
+        Button& keypad,
         Display& display,
         ButtonHandler& handler
     ):
-        task(taskName),
+        task("init_control task"),
         gameInfo{gameInfo},
         sendControl{sendControl},
         transferControl{transferControl},
@@ -76,11 +49,59 @@ public:
     void buttonPressed(int buttonID) {
         buttonChannel.write(buttonID);
     }
+
+    void gameOver() {
+        gameOverFlag.set();
+    }
+
+    void main() override {
+        mainState = MainState::ProcessInput;
+        subState = SubState::RequestInput;
+        initGameTimeInput();
+
+        for (;;) {
+            switch (mainState) {
+            case MainState::ProcessInput       : processInput()       ; break;
+            case MainState::DistributeSettings : distributeSettings() ; break;
+            case MainState::GameInProgress     : gameInProgress()     ; break;
+            case MainState::CommandSelection   : commandSelection()   ; break;
+            default: break;
+            }
+        }
+    }
 private:
+    enum class MainState {
+        ProcessInput,
+        DistributeSettings,
+        GameInProgress,
+        CommandSelection
+    };
+    enum class SubState {
+        RequestInput,
+        AccumulateInput
+    };
+    MainState mainstate;
+    SubState subState;
+
+    using buttonType = int;
+    rtos::channel<buttonType, 16> buttonChannel;
+    rtos::flag gameOverFlag;
+    rtos::clock countdownClock; // update name in CCD accordingly
+
+    char const *message;
+    uint_fast8_t minTime;
+    uint_fast8_t maxTime;
+    uint_fast8_t gameTime;
+    uint_fast8_t time;
+    uint_fast8_t countdown;
+    uint_fast8_t inputSize;
+    bool confGameTime;
+    bool countdownActive;
+
     void processInput(
         char const *message,
-        int minTime,
-        int maxTime
+        uint_fast8_t minTime,
+        uint_fast8_t maxTime
     ) {
         buttonType const buttonID;
 
@@ -90,12 +111,11 @@ private:
             display.displayMessage(message);
             buttonID = buttonChannel.read();
             time = 0;
+            inputSize = 0;
             break;
-
         case SubState::AccumulateInput:
             buttonID = buttonChannel.read();
             break;
-
         default:
             break;
         }
@@ -103,38 +123,32 @@ private:
     }
 
     void validateInput(char input) {
-        if (input >= '0' and input <= '9') {
-            // create overload for .display(char) ?
-            // will need to change this somehow
-            display.displayMessage(input);
-            time = time * 10 + input - '0';
-            subState = SubState::AccumulateInput;
-        } else if (input == '#') {
+        if (input == '#' or inputSize > 4) {
             if (time >= minTime and time <= maxTime) {
                 if (confGameTime) {
                     gameInfo.setTime(time);
                     gameTime = time;
-                    message = "Enter countdown (5-30): ";
-                    minTime = 5;
-                    maxTime = 30;
-                    confGameTime = false;
+                    initCountdownInput();
                     // mainState = MainState::ProcessInput;
                 } else {
                     countdown = time;
                     countdownActive = false;
-                    display.clear();
-                    display.displayMessage(
-                        "# - Speeltijd versturen\n"
-                        "* - Countdown versturen"
-                    );
+                    initDistributeSettings();
                     mainState = MainState::DistributeSettings;
                 }
+                // subState = SubState::RequestInput;
             } else {
                 display.clear();
-                display.displayMessage("Invoer ongeldig!");
+                display.displayMessage("Invoer\nongeldig!");
                 hwlib::wait_ms(1'000);
-                subState = SubState::RequestInput;
+                // subState = SubState::RequestInput;
             }
+            subState = SubState::RequestInput;
+        } else if (input >= '0' and input <= '9') {
+            display.displayMessage(buttonID);
+            time = time * 10 + input - '0';
+            inputSize++;
+            subState = SubState::AccumulateInput;
         } else {
             subState = SubState::AccumulateInput;
         }
@@ -148,40 +162,19 @@ private:
             char const *message;
 
             if (buttonID == '*') {
-                sendControl.sendMessage(countdown << 6);
-                message = "Countdown verstuurd!";
-                countdownActive = true;
-            } else if (buttonID == '#') {
-                sendControl.sendMessage(gameTime << 6);
+                sendControl.sendMessage(gameTime << 5);
                 sendControl.sendMessage(0b0);
-                message = "Speeltijd verstuurd!";
-            } else {
-                // mainState = MainState::DistributeSettings;
-                return;
+                sendControl.sendMessage(countdown << 5);
+                countdownActive = true;
+                display.clear();
+                display.displayMessage("Settings\nverstuurd!");
+                hwlib::wait_ms(1'000);
+                initDistributeSettings();
             }
-            display.clear();
-            display.displayMessage(message);
-            hwlib::wait_ms(1'000);
-            display.clear();
-            display.displayMessage(
-                "# - Speeltijd versturen\n"
-                "* - Countdown versturen");
-        } /*else if (event == countdownClock) {
-            if (countdownActive) {
-                --countdown;
-
-                if (countdown > 0) {
-                    // mainState = MainState::DistributeSettings;
-                } else {
-                    mainState = MainState::GameInProgress;
-                }
-            } else {
-                // mainState = MainState::DistributeSettings;
-            }
-        } */
-        else if (event == countdownClock
+            // mainState = MainState::DistributeSettings;
+        } else if (event == countdownClock
             and countdownActive
-            and --countdown < 1
+            and --countdown == 0
         ) {
             mainState = MainState::GameTimeControl;
         }
@@ -190,49 +183,57 @@ private:
     void gameInProgress() {
         // add default parameter to GameTimeControl::start(countdown = 0) ?
         gameTimeControl.start(0);
-        hwlib::wait_ms(gameTime * 60'000);
-        display.clear();
-        display.displayMessage(
-            "C - Instellingen invoeren"
-            "D - Spelgegevens transferen");
+        wait(gameOverFlag);
+        initCommandSelection();
         mainState = MainState::CommandSelection;
     }
 
     void commandSelection() {
         auto const buttonID = buttonChannel.read();
 
-        if (buttonID == 'D') {
+        if (buttonID == 'C') {
+            initGameTimeInput();
+            mainState = MainState::ProcessInput;
+            // subState = SubState::RequestInput;
+        } else if (buttonID == 'D') {
+            // while this action takes place, we probably want
+            // to wait for a flag until TransferControl is done?
             transferControl.transferCommand();
             // mainState = MainState::CommandSelection;
-        } else if (buttonID == 'C') {
-            message = "Enter speeltijd (1-15): ";
-            minTime = 1;
-            maxTime = 15;
-            confGameTime = true;
-            mainState = MainState::ProcessInput;
-            subState = SubState::RequestInput;
-        } /*else {
-            mainState = MainState::CommandSelection;
-        }*/
+        } else if (buttonID == '*') {
+            sendControl.sendMessage(0b1000'10000);
+            display.clear();
+            display.displayMessage("Transfer\nverstuurd!");
+            hwlib::wait_ms(1'000);
+            initCommandSelection();
+        }
     }
-public:
-    void main() override {
-        mainState = MainState::ProcessInput;
-        subState = SubState::RequestInput;
-        message = "Enter speeltijd (1-15): ";
+
+    void initGameTimeInput() {
+        message = "Enter speel-\ntijd (1-15):\n";
         minTime = 1;
         maxTime = 15;
         confGameTime = true;
+    }
 
-        for (;;) {
-            switch (mainState) {
-            case MainState::ProcessInput       : processInput()       ; break;
-            case MainState::DistributeSettings : distributeSettings() ; break;
-            case MainState::GameInProgress     : gameInProgress()     ; break;
-            case MainState::CommandSelection   : commandSelection()   ; break;
-            default: break;
-            }
-        }
+    void initCountdownInput() {
+        message = "Enter count-\ndown (5-30):\n";
+        minTime = 5;
+        maxTime = 30;
+        confGameTime = false;
+    }
+
+    void initDistributeSettings() {
+        display.clear();
+        display.displayMessage("* - Settings\n    versturen");
+    }
+
+    void initCommandSelection() {
+        display.clear();
+        display.displayMessage(
+            "C - Settings\n    invoeren\n"
+            "D - Lokaal\n    transferen\n"
+            "* - Transfer\n    versturen");
     }
 };
 

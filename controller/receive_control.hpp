@@ -16,7 +16,7 @@ private:
     rtos::timer timer_4ms;
 
     IrReceiver irReceiver;
-    Decoder decoder;
+    //Decoder decoder;
 
 public:
     ReceiveControl(/*ReceiveHitControl & receiveHitControl, GameTimeControl & gameTimeControl, RegisterControl & registerControl, TransferControl & transferControl*/):
@@ -82,4 +82,4 @@ private:
     }
 };
 
-#endif
+#endif // RECEIVE_CONTROL_HPP
