@@ -82,4 +82,4 @@ private:
         }
     }
 };
-#endif
+#endif //GAME_TIME_CONTROL JORIS KRIJG DE TERING
