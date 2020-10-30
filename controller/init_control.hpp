@@ -145,9 +145,9 @@ private:
             }
             subState = SubState::RequestInput;
         } else if (input >= '0' and input <= '9') {
-            display.displayMessage(buttonID - '0');
+            display.displayMessage(buttonID);
             time = time * 10 + input - '0';
-            ++inputSize;
+            inputSize++;
             subState = SubState::AccumulateInput;
         } else {
             subState = SubState::AccumulateInput;
