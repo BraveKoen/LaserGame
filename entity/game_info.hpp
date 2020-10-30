@@ -12,10 +12,6 @@ private:
     rtos::pool<int> weaponTypePool;
     rtos::pool<std::array<std::array<uint8_t, 2>,100>> hits;
 
-    //unsigned int PlayerID;
-    //unsigned int gameTime;
-    //unsigned int weaponType;
-    //int hits[100][2];
     unsigned int count = 0;
 
 public:
@@ -43,6 +39,19 @@ public:
         hits[count][1] = damage;
         count++;
     }
+
+    std::array<std::array<uint8_t, 2>,100> getHits(){
+        return hits.read();
+    }
+
+    void clearHits(){
+        for(unsigned int i = 0; i<=count; i++){
+            hits[i][0] = 0;
+            hits[i][1] = 0;
+        }
+        count = 0;
+    }
+
 };
 
-#endif
+#endif //GAME_INFO_HPP
