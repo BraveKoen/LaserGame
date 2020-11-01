@@ -3,13 +3,14 @@
 
 #include "hwlib.hpp"
 #include "rtos.hpp"
+#include "../boundary/glcd_oled_cooperative.hpp"
 
 class Display: public rtos::task<> {
 private:
     hwlib::target::pin_oc scl;
     hwlib::target::pin_oc sda;
 public:
-    enum class Font : uint8_t {
+    enum class Font: uint8_t {
         Mode8x8,
         Mode16x16
     };
@@ -101,14 +102,14 @@ public:
         }
     }
 private:
-    enum class State : uint8_t {
+    enum class State: uint8_t {
         Inactive,
         Clearing
     };
     // this type of construction ultimately saves
     // some additional pools and an extra flush
     struct MessageType {
-        enum class Tag : uint8_t {
+        enum class Tag: uint8_t {
             String,
             Letter,
             Number,
@@ -132,7 +133,11 @@ private:
     rtos::flag clearFlag;
 
     hwlib::i2c_bus_bit_banged_scl_sda i2cBus;
-    hwlib::glcd_oled display;
+    std::conditional_t<
+        true,
+        glcd_oled_cooperative,
+        hwlib::glcd_oled
+    > display;
     struct {
         hwlib::terminal_from mode8x8;
         hwlib::terminal_from mode16x16;
