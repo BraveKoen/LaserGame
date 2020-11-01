@@ -9,55 +9,80 @@ private:
     hwlib::target::pin_oc scl;
     hwlib::target::pin_oc sda;
 public:
+    enum class Font : uint8_t {
+        Mode8x8,
+        Mode16x16
+    };
+
     Display(
-        hwlib::target::pins scl_pin,
-        hwlib::target::pins sda_pin
+        hwlib::target::pins sclPin,
+        hwlib::target::pins sdaPin
     ):
         task("display task"),
-        scl(scl_pin),
-        sda(sda_pin),
-        i2c_bus(scl, sda),
-        display(i2c_bus),
-        font(),
-        terminal(display, font),
+        scl(sclPin),
+        sda(sdaPin),
+        i2cBus(scl, sda),
+        display(i2cBus),
+        terminal{
+            .mode8x8{display, hwlib::font_default_8x8()},
+            .mode16x16{display, hwlib::font_default_16x16()}
+        },
         messagePool("message pool"),
         messageFlag(this, "message flag"),
         clearFlag(this, "clear flag")
     {}
 
-    void displayMessage(char const *message) {
+    void displayMessage(
+        char const *message,
+        Font font = Font::Mode16x16
+    ) {
         // string literals have static storage duration so
         // writing the address of it to a pool seems fine
+        // note: should be compiled with -std=c++2a
         messagePool.write({
             .tag = MessageType::Tag::String,
-            .type = {.string = message}
+            .type = {.string = message},
+            .font = font
         });
         messageFlag.set();
     }
 
-    void displayMessage(char value) {
+    void displayMessage(
+        char value,
+        Font font = Font::Mode16x16
+    ) {
         // note: should be compiled with -std=c++2a
         messagePool.write({
             .tag = MessageType::Tag::Letter,
-            .type = {.letter = value}
+            .type = {.letter = value},
+            .font = font
         });
         messageFlag.set();
     }
 
-    void displayMessage(int value) {
+    void displayMessage(
+        int value,
+        Font font = Font::Mode16x16
+    ) {
         // note: should be compiled with -std=c++2a
         messagePool.write({
             .tag = MessageType::Tag::Number,
-            .type = {.number = value}
+            .type = {.number = value},
+            .font = font
         });
         messageFlag.set();
     }
 
-    void displayMessage(char const *message, int value) {
+    void displayMessage(
+        char const *message,
+        int value,
+        Font font = Font::Mode16x16
+    ) {
         // note: should be compiled with -std=c++2a
         messagePool.write({
             .tag = MessageType::Tag::Pair,
-            .type = {.pair = {.string = message, .number = value}}
+            .type = {.pair = {.string = message, .number = value}},
+            .font = font
         });
         messageFlag.set();
     }
@@ -76,14 +101,14 @@ public:
         }
     }
 private:
-    enum class State {
+    enum class State : uint8_t {
         Inactive,
         Clearing
     };
     // this type of construction ultimately saves
     // some additional pools and an extra flush
     struct MessageType {
-        enum class Tag {
+        enum class Tag : uint8_t {
             String,
             Letter,
             Number,
@@ -98,6 +123,7 @@ private:
                 int number;
             } pair;
         } type;
+        Font font;
     };
     State state;
 
@@ -105,10 +131,12 @@ private:
     rtos::flag messageFlag;
     rtos::flag clearFlag;
 
-    hwlib::i2c_bus_bit_banged_scl_sda i2c_bus;
+    hwlib::i2c_bus_bit_banged_scl_sda i2cBus;
     hwlib::glcd_oled display;
-    hwlib::font_default_8x8 font;
-    hwlib::terminal_from terminal;
+    struct {
+        hwlib::terminal_from mode8x8;
+        hwlib::terminal_from mode16x16;
+    } terminal;
 
     void inactive() {
         display.flush();
@@ -134,19 +162,23 @@ private:
         // file: hwlib-glcd-oled.hpp
         // line: 459
         auto const message = messagePool.read();
-
+        auto const& output{
+            message.font == Font::Mode16x16
+                ? terminal.mode16x16
+                : terminal.mode8x8
+        };
         switch (messageType.tag) {
         case MessageType::Tag::String:
-            terminal << message.type.string;
+            output << message.type.string;
             break;
         case MessageType::Tag::Letter:
-            terminal << message.type.letter;
+            output << message.type.letter;
             break;
         case MessageType::Tag::Number:
-            terminal << message.type.number;
+            output << message.type.number;
             break;
         case MessageType::Tag::Pair:
-            terminal
+            output
                 << message.type.pair.string
                 << message.type.pair.number;
             break;
