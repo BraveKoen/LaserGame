@@ -12,10 +12,10 @@
 SOURCES :=
 
 # header files in this project
-HEADERS := send_control.hpp ir_led.hpp red_led.hpp shot_control.hpp receive_control.hpp ir_receiver.hpp decoder.hpp
+HEADERS := button_listener.hpp button.hpp send_control.hpp ir_led.hpp red_led.hpp shot_control.hpp receive_control.hpp ir_receiver.hpp decoder.hpp game_time_control.hpp init_control.hpp receive_hit_control.hpp transfer_control.hpp buzzer.hpp display.hpp glcd_oled_cooperative.hpp keypad.hpp trigger.hpp game_info.hpp
 
 # other places to look for files for this project
-SEARCH  := controller boundary
+SEARCH  := controller boundary entity interface
 
 # set RELATIVE to the next higher directory and defer to the Makefile.due
 RELATIVE := $(RELATIVE)../

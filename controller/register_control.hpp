@@ -10,37 +10,35 @@
 
 class RegisterControl : public rtos::task<>, public ButtonListener{
 
-enum state_t {INACTIVE, CONFIGURING};
-enum state_sub {ENTERINGPLAYERNUMBER, ENTERINGWEAPONTYPE};
+enum states {INACTIVE, CONFIGURING};
+enum substates {DEFAULT, ENTERINGPLAYERNUMBER, ENTERINGWEAPONTYPE};
 
 private:
-    state_t state = INACTIVE;
-    state_sub substate = ENTERINGPLAYERNUMBER;
-    
-    rtos::channel<uint8_t buttonID, 10> buttonChannel;
-    rtos::pool<int time> gameTimePool;
-    rtos::flag gameTimeFlag;
+    states state = INACTIVE;
+    substates substate = DEFAULT;
 
     GameInfo& gameInfo;
     Display& display;
     Keypad& keypad;
-
+    rtos::channel<uint8_t, 10> buttonChannel;
+    rtos::pool<int> gameTimePool;
+    rtos::flag gameTimeFlag;
 
 public:
 RegisterControl(GameInfo& gameInfo, Display& display, Keypad& keypad):
     task("RegisterTask"),
-    buttonChannel( this, "buttonChannel"),
-    gameTimePool("gameTimePool"),
-    gameTimeFlag(this,"gameTimeFlag"),
     gameInfo(gameInfo),
     display(display),
-    keypad(keypad)
+    keypad(keypad),
+    buttonChannel(this, "buttonChannel"),
+    gameTimePool("gameTimePool"),
+    gameTimeFlag(this,"gameTimeFlag")
     {}
 
     void gameTime(int time){
         gameInfo.setTime(time);
     }
-    void buttonPressed(uint8_t buttonID){
+    void buttonPressed(int buttonID) override { // change type of buttonID
         buttonChannel.write(buttonID);
     }
 
@@ -51,7 +49,7 @@ private:
         uint8_t weaponType = 0;
         for(;;){
             switch(state){
-                case INACTIVE:
+                case INACTIVE: {
                     auto event = wait(gameTimeFlag + buttonChannel);
                     if(event == gameTimeFlag){
                         gameInfo.setTime(gameTimePool.read());
@@ -60,54 +58,55 @@ private:
                         state = CONFIGURING;
                     }
                     break;
+                }
                 case CONFIGURING:
-                    if(button=='A'){
-                        display.displayMessage("\t0000Enter Player Number");
-                        substate = ENTERINGPLAYERNUMBER;
-                    }else if(button== 'B'){
-                        display.displayMessage("\t0000Weapon Type\t0001(1-8): ");
-                        substate = ENTERINGWEAPONTYPE;
-                    }else{
-                        display.clear();
-                    }
-                    break;
-
                     switch(substate){
+                        case DEFAULT:
+                            if(button=='A'){
+                                display.displayMessage("\t0000Enter Player Number");
+                                substate = ENTERINGPLAYERNUMBER;
+                            }else if(button== 'B'){
+                                display.displayMessage("\t0000Weapon Type\t0001(1-8): ");
+                                substate = ENTERINGWEAPONTYPE;
+                            }else{
+                                display.clear();
+                            }
+                            break;
                         case ENTERINGPLAYERNUMBER:
-                            display.displayMessage("\t0000playerID: " << playerID);
+                            display.displayMessage("\t0000playerID: ", playerID);
                             button = buttonChannel.read();
                             if(button == '#'){
-                                gameinfo.setPlayerID(playerID);
+                                gameInfo.setPlayerID(playerID);
                                 display.clear();
                                 state = INACTIVE;
+                                substate = DEFAULT;
                             }else if(button >= '0' && button <= '9'){
                                 playerID *= 10;
                                 playerID += (button -'0');
                                 if(playerID > 31){
-                                    playerID = 0;
+                                    playerID = 1;
                                     display.displayMessage("\t0000playerID reset ");
                                     hwlib::wait_ms(1000);
                                 }
                             }
                             break;
                         case ENTERINGWEAPONTYPE:
-                            display.displayMessage("\t0000Weapon type: "<< weaponType);
-                            botton = buttonChannel.read();
+                            display.displayMessage("\t0000Weapon type: ", weaponType);
+                            button = buttonChannel.read();
                             if(button == '#'){
                                 gameInfo.setPlayerID(playerID);
                                 display.clear();
                                 state = INACTIVE;
+                                substate = DEFAULT;
                             }else if(button >= '0' && button <= '8'){
                                 weaponType = ((button-'0')-1);
                             }
                             break;
-
                     }
+                    break;
             }
-
         }
     }
-
 };
 
 #endif // REGISTER_CONTROL_HPP

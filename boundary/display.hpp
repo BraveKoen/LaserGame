@@ -3,7 +3,7 @@
 
 #include "hwlib.hpp"
 #include "rtos.hpp"
-#include "../boundary/glcd_oled_cooperative.hpp"
+// #include "glcd_oled_cooperative.hpp"
 
 class Display: public rtos::task<> {
 private:
@@ -103,6 +103,17 @@ private:
         Inactive,
         Clearing
     };
+    hwlib::i2c_bus_bit_banged_scl_sda i2cBus;
+    std::conditional_t<
+        false,
+        // glcd_oled_cooperative,
+        int,
+        hwlib::glcd_oled
+    > display;
+    struct {
+        hwlib::terminal_from mode8x8;
+        hwlib::terminal_from mode16x16;
+    } terminal;
     // this type of construction ultimately saves
     // some additional pools and an extra flush
     struct MessageType {
@@ -129,17 +140,6 @@ private:
     rtos::flag messageFlag;
     rtos::flag clearFlag;
 
-    hwlib::i2c_bus_bit_banged_scl_sda i2cBus;
-    std::conditional_t<
-        true,
-        glcd_oled_cooperative,
-        hwlib::glcd_oled
-    > display;
-    struct {
-        hwlib::terminal_from mode8x8;
-        hwlib::terminal_from mode16x16;
-    } terminal;
-
     void inactive() {
         display.flush();
         auto const event = wait(clearFlag + messageFlag);
@@ -158,12 +158,12 @@ private:
 
     void writeMessage() {
         auto const message = messagePool.read();
-        auto const& output{
+        auto& output{
             message.font == Font::Mode16x16
                 ? terminal.mode16x16
                 : terminal.mode8x8
         };
-        switch (messageType.tag) {
+        switch (message.tag) {
         case MessageType::Tag::String:
             output << message.type.string;
             break;

@@ -3,16 +3,15 @@
 
 #include "hwlib.hpp"
 #include "rtos.hpp"
+#include "../entity/game_info.hpp"
+#include <array>
 
 class TransferControl : public rtos::task<>{
 enum state_t { INACTIVE, ACTIVE };
 private:
-    state_t state = INACTIVE;
-
-    rtos::flag transferFlag;
-
     GameInfo& gameInfo;
-
+    rtos::flag transferFlag;
+    state_t state = INACTIVE;
 public:
     TransferControl(GameInfo& gameInfo):
     task("TransferControl"),
@@ -35,16 +34,18 @@ private:
                 case ACTIVE:
                     auto array_hits = gameInfo.getHits();
                     hwlib::cout << "Player data: "<< gameInfo.getPlayerID() << "\n";
-                    for(int i : array_hits){
-                        hwlib::cout << "Player: " << array_hits[0] << " Damage done: "<< array_hits[1]<< "\n";
-                        if(array_hits[1] == 0){
+                    for(auto hit : array_hits){
+                        hwlib::cout << "Player: " << hit[0] << " Damage done: "<< hit[1]<< "\n";
+                        if(hit[1] == 0){
                             break;
                         }
                     }
                     state = INACTIVE;
+                    break;
             }
         }
     }
 
 };
 
+#endif // TRANSFER_CONTROL_HPP

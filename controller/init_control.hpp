@@ -3,7 +3,7 @@
 
 #include "hwlib.hpp"
 #include "rtos.hpp"
-#include "game_info.hpp"
+#include "../entity/game_info.hpp"
 #include "game_time_control.hpp"
 #include "transfer_control.hpp"
 #include "send_control.hpp"
@@ -20,17 +20,21 @@ private:
     SendControl& sendControl;
     TransferControl& transferControl;
     GameTimeControl& gameTimeControl;
-    Button& keypad;
+    Keypad& keypad;
     Display& display;
+
+    using buttonType = int;
+    rtos::channel<buttonType, 16> buttonChannel;
+    // rtos::flag gameOverFlag;
+    rtos::clock countdownClock; // update name in CCD accordingly
 public:
     InitControl(
         GameInfo& gameInfo,
         SendControl& sendControl,
         TransferControl& transferControl,
         GameTimeControl& gameTimeControl,
-        Button& keypad,
-        Display& display,
-        ButtonHandler& handler
+        Keypad& keypad,
+        Display& display
     ):
         task("init_control task"),
         gameInfo{gameInfo},
@@ -43,32 +47,15 @@ public:
         countdownClock(this, 1'000, "countdown clock")
     {
         keypad.addButtonListener(this);
-        handler.addButton(keypad);
     }
 
-    void buttonPressed(int buttonID) {
+    void buttonPressed(int buttonID) override {
         buttonChannel.write(buttonID);
     }
 
-    void gameOver() {
-        gameOverFlag.set();
-    }
-
-    void main() override {
-        mainState = MainState::ProcessInput;
-        subState = SubState::RequestInput;
-        initGameTimeInput();
-
-        for (;;) {
-            switch (mainState) {
-            case MainState::ProcessInput       : processInput()       ; break;
-            case MainState::DistributeSettings : distributeSettings() ; break;
-            case MainState::GameInProgress     : gameInProgress()     ; break;
-            case MainState::CommandSelection   : commandSelection()   ; break;
-            default: break;
-            }
-        }
-    }
+    // void gameOver() {
+    //     gameOverFlag.set();
+    // }
 private:
     enum class MainState {
         ProcessInput,
@@ -80,13 +67,8 @@ private:
         RequestInput,
         AccumulateInput
     };
-    MainState mainstate;
+    MainState mainState;
     SubState subState;
-
-    using buttonType = int;
-    rtos::channel<buttonType, 16> buttonChannel;
-    rtos::flag gameOverFlag;
-    rtos::clock countdownClock; // update name in CCD accordingly
 
     char const *message;
     uint_fast8_t minTime;
@@ -97,14 +79,9 @@ private:
     uint_fast8_t inputSize;
     bool confGameTime;
     bool countdownActive;
+    buttonType buttonID;
 
-    void processInput(
-        char const *message,
-        uint_fast8_t minTime,
-        uint_fast8_t maxTime
-    ) {
-        buttonType const buttonID;
-
+    void processInput() {
         switch (subState) {
         case SubState::RequestInput:
             display.clear();
@@ -155,11 +132,10 @@ private:
     }
 
     void distributeSettings() {
-        auto const event = wait(buttonChannel, countdownClock);
+        auto event = wait(buttonChannel + countdownClock);
 
         if (event == buttonChannel) {
             auto const buttonID = buttonChannel.read();
-            char const *message;
 
             if (buttonID == '*') {
                 sendControl.sendMessage(gameTime << 5);
@@ -176,14 +152,15 @@ private:
             and countdownActive
             and --countdown == 0
         ) {
-            mainState = MainState::GameTimeControl;
+            mainState = MainState::GameInProgress;
         }
     }
 
     void gameInProgress() {
         // add default parameter to GameTimeControl::start(countdown = 0) ?
         gameTimeControl.start(0);
-        wait(gameOverFlag);
+        // wait(gameOverFlag);
+        hwlib::wait_ms(gameTime * 60'000);
         initCommandSelection();
         mainState = MainState::CommandSelection;
     }
@@ -234,6 +211,22 @@ private:
             "C - Settings\n    invoeren\n"
             "D - Lokaal\n    transferen\n"
             "* - Transfer\n    versturen");
+    }
+public:
+    void main() override {
+        mainState = MainState::ProcessInput;
+        subState = SubState::RequestInput;
+        initGameTimeInput();
+
+        for (;;) {
+            switch (mainState) {
+            case MainState::ProcessInput       : processInput()       ; break;
+            case MainState::DistributeSettings : distributeSettings() ; break;
+            case MainState::GameInProgress     : gameInProgress()     ; break;
+            case MainState::CommandSelection   : commandSelection()   ; break;
+            default: break;
+            }
+        }
     }
 };
 
