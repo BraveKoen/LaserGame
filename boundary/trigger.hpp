@@ -16,7 +16,7 @@ public:
         task("trigger task"),
         buttonID{buttonID},
         sw{sw_pin},
-        buttonClock(this, 50, "button clock")
+        buttonClock(this, 50000, "button clock")
     {}
 
     void main() override {
@@ -25,7 +25,10 @@ public:
         };
         for (State state = State::Inactive;;) {
             switch (state) {
-            case State::Inactive: updateOnPressed(); break;
+            case State::Inactive: 
+                wait(buttonClock);
+                updateOnPressed(); 
+                break;
             default: break;
             }
         }
