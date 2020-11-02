@@ -50,19 +50,19 @@ private:
     void main(){
         unsigned int countdown;
         unsigned int gameTime;
-        unsigned int currentTime;
 
-        currentTime = hwlib::now_us();
-        countdown = countDownPool.read();
-        gameTime = gameInfo.getTime();
         for(;;){
             switch(state){
                 case INACTIVE: 
                     wait(countDownFlag);
+                    countdown = countDownPool.read();
+                    gameTime = gameInfo.getTime() * 60;
                     state = COUNTDOWN;  
                     break;
                 case COUNTDOWN:
                     if(countdown <= 0){
+                        display.displayMessage("\t0000GO!");
+                        receiveHitControl.start();
                         state = GAMETIME;
                         break;
                     }else{
@@ -72,7 +72,6 @@ private:
                         break;
                     }
                 case GAMETIME:
-                    display.displayMessage("\t0000GO!");
                     if(gameTime > 1){
                         hwlib::wait_ms(1'000);
                         gameTime--;

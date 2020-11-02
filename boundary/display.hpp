@@ -152,7 +152,7 @@ private:
     }
 
     void clearing() {
-        display.clear();
+        display.clear(); hwlib::cout << hwlib::endl; // <---------
         state = State::Inactive;
     }
 

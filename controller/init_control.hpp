@@ -44,7 +44,7 @@ public:
         keypad{keypad},
         display{display},
         buttonChannel(this, "button channel"),
-        countdownClock(this, 1'000, "countdown clock")
+        countdownClock(this, 1'000'000, "countdown clock")
     {
         keypad.addButtonListener(this);
     }
@@ -122,7 +122,7 @@ private:
             }
             subState = SubState::RequestInput;
         } else if (input >= '0' and input <= '9') {
-            display.displayMessage(buttonID);
+            display.displayMessage((char)buttonID);
             time = time * 10 + input - '0';
             inputSize++;
             subState = SubState::AccumulateInput;

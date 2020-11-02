@@ -57,12 +57,14 @@ private:
         for(;;){
             switch(state){
                 case INACTIVE:
+                    hwlib::cout << "cock1";
                     wait( startFlag );
                     lives = 100;
                     playerID = gameInfo.getPlayerID();
                     state = ACTIVE;
                     break;
                 case ACTIVE:
+                    hwlib::cout << "cock2";
                     hit = hitReceivedChannel.read();
                     if(hit[0]==playerID){
                         break;
