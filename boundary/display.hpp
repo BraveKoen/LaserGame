@@ -159,9 +159,10 @@ private:
     void writeMessage() {
         auto const message = messagePool.read();
         auto& output{
-            message.font == Font::Mode16x16
-                ? terminal.mode16x16
-                : terminal.mode8x8
+            hwlib::cout  //<< message << "\n";
+            // message.font == Font::Mode16x16
+            //     ? terminal.mode16x16
+            //     : terminal.mode8x8
         };
         switch (message.tag) {
         case MessageType::Tag::String:
