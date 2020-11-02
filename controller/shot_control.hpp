@@ -23,7 +23,8 @@ private:
 
     state_t state = INACTIVE;
 
-    rtos::channel<int,10> buttonChannel;
+    rtos::pool<int> buttonPool;
+    rtos::flag buttonFlag;
     rtos::flag startFlag;
     rtos::flag gameOverFlag;
     rtos::timer timerWeaponCooldown;
@@ -39,18 +40,20 @@ public:
     gameInfo(gameInfo),
     keypad(keypad),
     trigger('T', hwlib::target::pins::d6),
-    buttonChannel( this, "buttonChannel" ),
+    buttonPool( "buttonPool" ),
+    buttonFlag( this, "buttonFlag" ),
     startFlag( this, "startFlag" ),
     gameOverFlag(this, "gameOverFlag"),
     timerWeaponCooldown(this, "timerWeaponCooldown")
     {
         keypad.addButtonListener(this);
         trigger.addButtonListener(this);
-        //Unsure if multiple classes should add the same keypad
+        //Unsure if multiple classes should add the same keypad <- listener should make sure it doesnt have dupes, dont know if it does
     }
 
     void buttonPressed(int buttonID){
-        buttonChannel.write(buttonID);
+        buttonFlag.set();
+        buttonPool.write(buttonID);
     }
     void start(){
         startFlag.set();
@@ -73,10 +76,10 @@ private:
                     state = ACTIVE;
                     break;
                 case ACTIVE:
-                    auto event = wait(buttonChannel + gameOverFlag);
-                    if(event == buttonChannel){
+                    auto event = wait(buttonFlag + gameOverFlag);
+                    if(event == buttonFlag){
                         wait(timerWeaponCooldown);
-                        button = buttonChannel.read();
+                        button = buttonPool.read();
                         if(button == '*' || button == 'T'){
                             sendControl.sendMessage((playerID<<5)+ weapon );
                             timerWeaponCooldown.set(cooldownForWeapon[weapon]*1'000);
