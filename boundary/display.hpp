@@ -33,17 +33,17 @@ public:
         clearFlag(this, "clear flag")
     {}
 
+    // note: these function overloads require flag -std=c++2a
     void displayMessage(
         char const *message,
         Font font = Font::Mode16x16
     ) {
         // string literals have static storage duration so
         // writing the address of it to a pool seems fine
-        // note: should be compiled with -std=c++2a
         messagePool.write({
-            .tag = MessageType::Tag::String,
-            .type = {.string = message},
-            .font = font
+            .tag{MessageType::Tag::String},
+            .type{.string{message}},
+            .font{font}
         });
         messageFlag.set();
     }
@@ -52,11 +52,10 @@ public:
         char value,
         Font font = Font::Mode16x16
     ) {
-        // note: should be compiled with -std=c++2a
         messagePool.write({
-            .tag = MessageType::Tag::Letter,
-            .type = {.letter = value},
-            .font = font
+            .tag{MessageType::Tag::Letter},
+            .type{.letter{value}},
+            .font{font}
         });
         messageFlag.set();
     }
@@ -65,11 +64,10 @@ public:
         int value,
         Font font = Font::Mode16x16
     ) {
-        // note: should be compiled with -std=c++2a
         messagePool.write({
-            .tag = MessageType::Tag::Number,
-            .type = {.number = value},
-            .font = font
+            .tag{MessageType::Tag::Number},
+            .type{.number{value}},
+            .font{font}
         });
         messageFlag.set();
     }
@@ -79,11 +77,10 @@ public:
         int value,
         Font font = Font::Mode16x16
     ) {
-        // note: should be compiled with -std=c++2a
         messagePool.write({
-            .tag = MessageType::Tag::Pair,
-            .type = {.pair = {.string = message, .number = value}},
-            .font = font
+            .tag{MessageType::Tag::Pair},
+            .type{.pair{.string{message}, .number{value}}},
+            .font{font}
         });
         messageFlag.set();
     }
@@ -160,12 +157,6 @@ private:
     }
 
     void writeMessage() {
-        // note: currently, there are no wait calls active at
-        // glcd_i2c's flush implementation
-        //
-        // to-do: edit flush() function of glcd_oled_i2c_128x64_buffered class
-        // file: hwlib-glcd-oled.hpp
-        // line: 459
         auto const message = messagePool.read();
         auto const& output{
             message.font == Font::Mode16x16
