@@ -18,6 +18,7 @@ public:
     }
 protected:
     void update(int buttonID) {
+        hwlib::cout << buttonID << hwlib::endl;
         for (size_t index = 0; index < count; index++) {
             buttonListeners[index]->buttonPressed(buttonID);
         }
