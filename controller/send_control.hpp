@@ -1,3 +1,6 @@
+#ifndef SEND_CONTROL_HPP
+#define SEND_CONTROL_HPP
+
 #include "hwlib.hpp"
 #include "rtos.hpp"
 #include "../boundary/red_led.hpp"
@@ -11,7 +14,7 @@ enum state_t {INACTIVE, SENDING};
 private:
     state_t state = INACTIVE;
 
-    rtos::channel<uint_fast16_t, 10> messageChannel;
+    rtos::channel<uint_fast16_t, 20> messageChannel;
     RedLed redLed;
     IrLed irLed;
 public:
@@ -23,6 +26,7 @@ public:
     {}
 
     void sendMessage(uint_fast16_t message){
+        messageChannel.write(message);
         messageChannel.write(message);
     }
 
@@ -62,9 +66,12 @@ private:
                     }else{
                         state = INACTIVE;
                         redLed.write(0);
+                        hwlib::wait_ms(3);
                     }
                     break;
             }
         }
     }
 };
+
+#endif // SEND_CONTROL_HPP
