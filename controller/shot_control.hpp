@@ -4,9 +4,10 @@
 #include "hwlib.hpp"
 #include "rtos.hpp"
 #include "send_control.hpp"
+#include "../interface/button_listener.hpp"
 
 
-class ShotControl : public rtos::task<>{
+class ShotControl : public rtos::task<>, public ButtonListener{
 
 enum state_t {INACTIVE, ACTIVE};
 
