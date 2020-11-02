@@ -1,25 +1,27 @@
 #ifndef BUZZER_HPP
 #define BUZZER_HPP
 
-class ReceiveHitControl : public rtos::task<>{
+#include "rtos.hpp"
+#include "hwlib.hpp"
+
+class Buzzer : public rtos::task<>{
 
 enum state_t {INACTIVE, ACTIVE};
 
 private:
-    state_t state = INACTIVE;
-
+    hwlib::target::pin_out buzzerPin;
     rtos::clock clock_1500us;
-    rtos::flag playSoundFlag;
     rtos::pool<bool> playSoundPool;
+    rtos::flag playSoundFlag;
 
-    hwlib::target::pin_out buzzer;
-
-
+    state_t state = INACTIVE;
 public:
-    ReceiveHitControl(hwlib::target::pins pin):
+    Buzzer(hwlib::target::pins pin):
         task("Buzzer"),
+        buzzerPin(hwlib::target::pin_out(pin)),
         clock_1500us(this, 1500, "1500 us clock"),
-        buzzer(hwlib::target::pin_out(pin))
+        playSoundPool("playSoundPool"),
+        playSoundFlag(this, "paySoundFlag")
     {}
 
     void playSound(bool on){
@@ -48,17 +50,17 @@ private:
                     if(event == clock_1500us){
                         if(buzzerState == true){
                             buzzerState = false;
-                            buzzer.write(true);
+                            buzzerPin.write(true);
                         }else{
                             buzzerState = true;
-                            buzzer.write(false);
+                            buzzerPin.write(false);
                         }
-                    }if else(event == playSoundFlag){
+                    }else if(event == playSoundFlag){
                         state = INACTIVE;
-                        buzzer.write(false);
+                        buzzerPin.write(false);
                     }
                     break;
-
+            }
         }
     }
 };

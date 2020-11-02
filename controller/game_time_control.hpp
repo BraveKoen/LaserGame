@@ -1,8 +1,8 @@
 #ifndef GAME_TIME_CONTROL_HPP
 #define GAME_TIME_CONTROL_HPP
 
-#include "game_info.hpp"
-#include "init_control.hpp"
+#include "../entity/game_info.hpp"
+//#include "init_control.hpp"
 #include "hwlib.hpp"
 #include "rtos.hpp"
 #include "shot_control.hpp"
@@ -17,22 +17,29 @@ private:
     rtos::pool<int> countDownPool;
     rtos::flag countDownFlag;
 
-    GameInfo gameInfo;
-    InitControl initControl;
-    ShotControl shotControl;
-    ReceiveHitControl receiveHitControl;
+    GameInfo& gameInfo;
+    // InitControl& initControl;
+    ShotControl& shotControl;
+    ReceiveHitControl& receiveHitControl;
     Display& display;
 
 public:
-    GameTimeControl(GameInfo& gameInfo, InitControl& initControl, ShotControl& shotControl, ReceiveHitControl& receiveHitControl, Display& display):
+    GameTimeControl(
+        GameInfo& gameInfo,
+        // InitControl& initControl,
+        ShotControl& shotControl,
+        ReceiveHitControl& receiveHitControl,
+        Display& display
+    ):
     task("GameTimeTask"),
     countDownPool("countDownPool"),
     countDownFlag(this, "countDownFlag"),
     gameInfo(gameInfo),
-    initControl(initControl),
+    // initControl(initControl),
     shotControl(shotControl),
     receiveHitControl(receiveHitControl),
-    display(display){}
+    display(display)
+    {}
 
     void start(unsigned int countdown = 1){
         countDownPool.write(countdown);
@@ -59,7 +66,7 @@ private:
                         state = GAMETIME;
                         break;
                     }else{
-                        display.displayMessage("\t0000Start:\t0001"<<countdown);
+                        display.displayMessage("\t0000Start:\t0001", countdown); 
                         countdown--;
                         hwlib::wait_ms(1'000);
                         break;
@@ -69,10 +76,10 @@ private:
                     if(gameTime > 1){
                         hwlib::wait_ms(1'000);
                         gameTime--;
-                        display.displayMessage("\t0000Time:\t0001" << gameTime);
+                        display.displayMessage("\t0000Time:\t0001", gameTime);
                         break;
                     }else{
-                        initControl.gameOver();
+                        // initControl.gameOver();
                         shotControl.gameOver();
                         receiveHitControl.gameOver();
                         state = INACTIVE;

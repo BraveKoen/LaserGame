@@ -15,7 +15,7 @@ public:
         hwlib::port_in& in_port
     ):
         Button(),
-        rtos::task("keypad task"),
+        task("keypad task"),
         matrix{out_port, in_port},
         keypad{matrix, "123A456B789C*0#D"}
     {}

@@ -3,12 +3,10 @@
 
 #include "hwlib.hpp"
 
-class glcd_oled_cooperative:
-    public glcd_oled_i2c_128x64_buffered
-{
+class glcd_oled_cooperative : public hwlib::glcd_oled_i2c_128x64_buffered {
 public:
     glcd_oled_cooperative(
-        i2c_bus& bus,
+        hwlib::i2c_bus& bus,
         int address = 0x3C
     ):
         glcd_oled_i2c_128x64_buffered(bus, address)

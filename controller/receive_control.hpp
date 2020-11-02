@@ -3,7 +3,7 @@
 
 #include "hwlib.hpp"
 #include "rtos.hpp"
-#include "ir_receiver.hpp"
+#include "../boundary/ir_receiver.hpp"
 #include "decoder.hpp"
 
 class ReceiveControl : public rtos::task<>{
@@ -16,15 +16,15 @@ private:
     rtos::timer timer_4ms;
 
     IrReceiver irReceiver;
-    //Decoder decoder;
+    Decoder decoder;
 
 public:
-    ReceiveControl(/*ReceiveHitControl & receiveHitControl, GameTimeControl & gameTimeControl, RegisterControl & registerControl, TransferControl & transferControl*/):
+    ReceiveControl(ReceiveHitControl & receiveHitControl, GameTimeControl & gameTimeControl, RegisterControl & registerControl, TransferControl & transferControl):
     task("ReceiveTask"),
     clock_200us(this, 200, "200 us clock"), 
     timer_4ms(this, "4 ms timer"),
     irReceiver(hwlib::target::pins::d8),
-    decoder(/*receiveHitControl, gameTimeControl, registerControl, transferControl*/)
+    decoder(receiveHitControl, gameTimeControl, registerControl, transferControl)
     {}
 
 private:

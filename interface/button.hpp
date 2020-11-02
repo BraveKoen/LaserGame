@@ -3,7 +3,7 @@
 
 #include <array>
 #include "hwlib.hpp"
-#include "../interface/button_listener.hpp"
+#include "button_listener.hpp"
 
 class Button {
 public:
@@ -19,7 +19,7 @@ public:
 protected:
     void update(int buttonID) {
         for (size_t index = 0; index < count; index++) {
-            buttonListeners[index].buttonPressed(buttonID);
+            buttonListeners[index]->buttonPressed(buttonID);
         }
     }
 private:

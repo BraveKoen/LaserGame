@@ -3,8 +3,11 @@
 
 #include "hwlib.hpp"
 #include "rtos.hpp"
-#include "controller/send_control.hpp"
+#include "send_control.hpp"
 #include "../interface/button_listener.hpp"
+#include "../entity/game_info.hpp"
+#include "../boundary/trigger.hpp"
+#include "../boundary/keypad.hpp"
 
 
 class ShotControl : public rtos::task<>, public ButtonListener{
@@ -12,6 +15,12 @@ class ShotControl : public rtos::task<>, public ButtonListener{
 enum state_t {INACTIVE, ACTIVE};
 
 private:
+    SendControl& sendControl;
+    GameInfo& gameInfo;
+    Keypad& keypad;
+    Trigger trigger;
+
+
     state_t state = INACTIVE;
 
     rtos::channel<int,10> buttonChannel;
@@ -21,18 +30,15 @@ private:
 
     std::array<int, 8> cooldownForWeapon = {1'000,2'000,2'000,2'000,2'000,2'000,2'000,2'000}; //Only 2 weapons defined so far.
 
-    SendControl& sendControl;
-    GameInfo& gameInfo;
-    Button& keypad;
-    Button trigger;
+
     
 public:
-    ShotControl(Button& keypad, ButtonHandler& handler, GameInfo& gameInfo, SendControl& sendControl):
+    ShotControl(SendControl& sendControl, GameInfo& gameInfo, Keypad& keypad):
     task( "ShotTask" ),
     sendControl(sendControl),
     gameInfo(gameInfo),
     keypad(keypad),
-    trigger(),
+    trigger('T', hwlib::target::pins::d6),
     buttonChannel( this, "buttonChannel" ),
     startFlag( this, "startFlag" ),
     gameOverFlag(this, "gameOverFlag"),
@@ -41,25 +47,23 @@ public:
         keypad.addButtonListener(this);
         trigger.addButtonListener(this);
         //Unsure if multiple classes should add the same keypad
-        handler.addButton(keypad);
-        handler.addButton(trigger);
-
     }
 
     void buttonPressed(int buttonID){
         buttonChannel.write(buttonID);
     }
     void start(){
-        StartFlag.set();
+        startFlag.set();
     }
     void gameOver(){
-        GameOverFlag.set();
+        gameOverFlag.set();
     }
 
 private:
     void main(){
         unsigned int weapon;
         unsigned int playerID;
+        unsigned int button;
         for(;;){
             switch(state){
                 case INACTIVE:
@@ -67,6 +71,7 @@ private:
                     weapon = gameInfo.getWeapon();
                     playerID = gameInfo.getPlayerID();
                     state = ACTIVE;
+                    break;
                 case ACTIVE:
                     auto event = wait(buttonChannel + gameOverFlag);
                     if(event == buttonChannel){
@@ -86,4 +91,4 @@ private:
     //verrandering
 };
 
-#endif //SHOT_CONTROL_HPP
+#endif // SHOT_CONTROL_HPP

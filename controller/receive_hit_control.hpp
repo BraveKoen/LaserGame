@@ -3,7 +3,7 @@
 
 #include "hwlib.hpp"
 #include "rtos.hpp"
-#include "game_info.hpp"
+#include "../entity/game_info.hpp"
 #include "shot_control.hpp"
 #include "../boundary/display.hpp"
 #include "../boundary/buzzer.hpp"
@@ -14,26 +14,30 @@ class ReceiveHitControl : public rtos::task<>{
 enum state_t {INACTIVE, ACTIVE};
 
 private:
-    state_t state = INACTIVE;
+    GameInfo& gameInfo;
+    ShotControl& shotControl;
+    Display& display;
+    Buzzer buzzer;
 
     rtos::channel<std::array<uint8_t, 2>, 10> hitReceivedChannel;
-    rtos::flag gameOverFlag, startFlag;
+    rtos::flag gameOverFlag;
+    rtos::flag startFlag;
 
-    GameInfo& gameinfo;
-    ShotControl& shotControl;
-    Buzzer buzzer;
-    Display& display;
+    state_t state = INACTIVE;
 public:
     ReceiveHitControl(
         GameInfo& gameInfo,
-        SendControl& sendControl,
+        ShotControl& shotControl,
         Display& display
     ):
         task("ReceiveHitControl"),
         gameInfo(gameInfo),
-        sendControl(sendControl),
+        shotControl(shotControl),
+        display(display),
         buzzer(hwlib::target::pins::d9),
-        display(display)
+        hitReceivedChannel(this, "hitReceivedChannel"),
+        gameOverFlag(this, "gameOverFlag"),
+        startFlag(this, "startFlag")
     {}
 
     void hitReceived(uint8_t playerID, uint8_t damage){
