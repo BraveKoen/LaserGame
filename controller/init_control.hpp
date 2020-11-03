@@ -84,8 +84,8 @@ private:
     void processInput() {
         switch (subState) {
         case SubState::RequestInput:
-            display.clear();
-            display.displayMessage(message);
+            //display.clear();
+            display.displayMessage(message, Display::Font::Mode8x8);
             buttonID = buttonChannel.read();
             time = 0;
             inputSize = 0;
@@ -115,14 +115,14 @@ private:
                 }
                 // subState = SubState::RequestInput;
             } else {
-                display.clear();
-                display.displayMessage("Invoer\nongeldig!");
+                // display.clear();
+                display.displayMessage("\f\vInvoer\nongeldig!", Display::Font::Mode8x8);
                 hwlib::wait_ms(1'000);
                 // subState = SubState::RequestInput;
             }
             subState = SubState::RequestInput;
         } else if (input >= '0' and input <= '9') {
-            display.displayMessage((char)buttonID);
+            display.displayMessage(static_cast<char>(buttonID), Display::Font::Mode8x8);
             time = time * 10 + input - '0';
             inputSize++;
             subState = SubState::AccumulateInput;
@@ -142,8 +142,8 @@ private:
                 sendControl.sendMessage(0b0);
                 sendControl.sendMessage(countdown << 5);
                 countdownActive = true;
-                display.clear();
-                display.displayMessage("Settings\nverstuurd!");
+                // display.clear();
+                display.displayMessage("\f\vSettings\nverstuurd!", Display::Font::Mode8x8);
                 hwlib::wait_ms(1'000);
                 initDistributeSettings();
             }
@@ -179,38 +179,41 @@ private:
             // mainState = MainState::CommandSelection;
         } else if (buttonID == '*') {
             sendControl.sendMessage(0b1000'10000);
-            display.clear();
-            display.displayMessage("Transfer\nverstuurd!");
+            // display.clear();
+            display.displayMessage("\f\vTransfer\nverstuurd!", Display::Font::Mode8x8);
             hwlib::wait_ms(1'000);
             initCommandSelection();
         }
     }
 
     void initGameTimeInput() {
-        message = "Enter speel-\ntijd (1-15):\n";
+        message = "\f\vEnter speel-\ntijd (1-15):\n";
         minTime = 1;
         maxTime = 15;
         confGameTime = true;
     }
 
     void initCountdownInput() {
-        message = "Enter count-\ndown (5-30):\n";
+        message = "\f\vEnter count-\ndown (5-30):\n";
         minTime = 5;
         maxTime = 30;
         confGameTime = false;
     }
 
     void initDistributeSettings() {
-        display.clear();
-        display.displayMessage("* - Settings\n    versturen");
+        // display.clear();
+        display.displayMessage(
+            "\f\v* - Settings\n    versturen",
+            Display::Font::Mode8x8);
     }
 
     void initCommandSelection() {
-        display.clear();
+        // display.clear();
         display.displayMessage(
-            "C - Settings\n    invoeren\n"
+            "\f\vC - Settings\n    invoeren\n"
             "D - Lokaal\n    transferen\n"
-            "* - Transfer\n    versturen");
+            "* - Transfer\n    versturen",
+            Display::Font::Mode8x8);
     }
 public:
     void main() override {
