@@ -16,6 +16,7 @@ private:
 
     rtos::pool<int> countDownPool;
     rtos::flag countDownFlag;
+    rtos::clock clock_1s;
 
     GameInfo& gameInfo;
     // InitControl& initControl;
@@ -34,6 +35,7 @@ public:
     task("GameTimeTask"),
     countDownPool("countDownPool"),
     countDownFlag(this, "countDownFlag"),
+    clock_1s(this, 1'000'000, "1s clock"), 
     gameInfo(gameInfo),
     // initControl(initControl),
     shotControl(shotControl),
@@ -66,16 +68,17 @@ private:
                         state = GAMETIME;
                         break;
                     }else{
+                        wait(clock_1s);
                         display.displayMessage("\t0000Start:\t0001", countdown); 
                         countdown--;
-                        hwlib::wait_ms(1'000);
                         break;
                     }
                 case GAMETIME:
                     if(gameTime > 1){
-                        hwlib::wait_ms(1'000);
+                        wait(clock_1s);
                         gameTime--;
-                        display.displayMessage("\t0000Time:\t0001", gameTime);
+                        display.displayMessage("\t0000Timer:\t0001", gameTime/60); 
+                        display.displayMessage(":", gameTime%60); 
                         break;
                     }else{
                         // initControl.gameOver();
