@@ -93,7 +93,7 @@ private:
                     switch(substate){
                         case DEFAULT:
                             if(button=='A'){
-                                display.displayMessage("/t0000Enter Player\t0001Number (0-31): ");
+                                display.displayMessage("\t0000Enter Player Number");
                                 substate = ENTERINGPLAYERNUMBER;
                             }else if(button== 'B'){
                                 display.displayMessage("\t0000Weapon Type\t0001(1-8): ");
