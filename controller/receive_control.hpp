@@ -35,8 +35,7 @@ private:
         uint_fast8_t signalHigh=0;
 
         for(;;){
-            switch(state)
-            {
+            switch(state){
                 case WAITING:
                     wait(clock_200us);
                     signal = irReceiver.read();
