@@ -8,6 +8,10 @@
 #include "shot_control.hpp"
 #include "receive_hit_control.hpp"
 
+/// \brief
+/// Class GameTimeControl
+/// \details
+/// This class is used for keeping track of time.
 class GameTimeControl : public rtos::task<>{
     enum state_t { INACTIVE, COUNTDOWN, GAMETIME };
 
@@ -25,6 +29,11 @@ private:
     Display& display;
 
 public:
+/// \brief
+/// Constructor GameTimeControl.
+/// \details
+/// the Constructor expects GameInfo, ShotControl, ReceiveHitControl and Display all by reference.
+/// countDownPool and countDownFlag are created.
     GameTimeControl(
         GameInfo& gameInfo,
         // InitControl& initControl,
@@ -42,13 +51,26 @@ public:
     receiveHitControl(receiveHitControl),
     display(display)
     {}
-
+/// \brief
+/// Function start int countdown with a default 1: void
+/// \details
+/// Writes the countdown to the pool and will set the countDownFlag
     void start(unsigned int countdown = 1){
         countDownPool.write(countdown);
         countDownFlag.set();
     }
 
 private:
+    /// \brief
+    /// main GameTimeControl
+    /// \details
+    /// there are three states INACTIVE, COUNTDOWN and GAMETIME
+    /// case INACTIVE
+    ///     Waits for startFlag to be set.
+    ///     if startFlag is set it will set lives to 100, playerID to gameInfo.getPlayerID and STATE to ACTIVE.
+    /// case ACTIVE
+    ///     hitReceivedChannel will read when there is a new hit, how higher the damage how longer to buzzer will go off.
+    ///     if lives is below 0 it will send a gameOverFlag and the state go in to INACTIVE
     void main(){
         unsigned int countdown;
         unsigned int gameTime;

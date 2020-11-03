@@ -10,7 +10,10 @@
 
 #include "../boundary/keypad.hpp"
 #include "../boundary/display.hpp"
-
+/// \brief
+/// Class InitControl.
+/// \details
+/// This class is for game setting: Countdown and how long the game lasts
 class InitControl:
     public rtos::task<>,
     public ButtonListener
@@ -27,6 +30,11 @@ private:
     rtos::channel<buttonType, 16> buttonChannel;
     rtos::clock countdownClock; // update name in CCD accordingly
 public:
+/// \brief
+/// Constructor ReceiveControl.
+/// \details
+/// the Constructor expects GameInfo, SendControl, TransferControl, GameTimeControl, Keypad and Display all by reference.
+/// ButtonChannel and CountDownClock are created, the keypad is add to ButtonListener. 
     InitControl(
         GameInfo& gameInfo,
         SendControl& sendControl,
@@ -47,7 +55,10 @@ public:
     {
         keypad.addButtonListener(this);
     }
-
+/// \brief
+/// buttonPressed function void, expects a int
+/// \details
+/// buttonPressed needs a buttunID. When the function is called it will write the buttonID to the buttonChannel.
     void buttonPressed(int buttonID) override {
         buttonChannel.write(buttonID);
     }
@@ -110,7 +121,7 @@ private:
                 // subState = SubState::RequestInput;
             } else {
                 display.displayMessage(
-                    "\f\vInvoer\nongeldig!",
+                    "\f\vInput\ninvalid!",
                     Display::Font::Mode8x8);
                 hwlib::wait_ms(1'000);
                 buttonChannel.clear();
@@ -142,7 +153,7 @@ private:
                 sendControl.sendMessage(0b0);
                 sendControl.sendMessage(countdown << 5);
                 countdownActive = true;
-                display.displayMessage("\f\vSettings\nverstuurd!", Display::Font::Mode8x8);
+                display.displayMessage("\f\vSettings\nsent!", Display::Font::Mode8x8);
                 hwlib::wait_ms(1'000);
                 buttonChannel.clear();
                 initDistributeSettings();
@@ -179,7 +190,7 @@ private:
             // mainState = MainState::CommandSelection;
         } else if (buttonID == '*') {
             sendControl.sendMessage(0b1000'10000);
-            display.displayMessage("\f\vTransfer\nverstuurd!", Display::Font::Mode8x8);
+            display.displayMessage("\f\vTransfer\ncommand sent!", Display::Font::Mode8x8);
             hwlib::wait_ms(1'000);
             buttonChannel.clear();
             initCommandSelection();
@@ -187,7 +198,7 @@ private:
     }
 
     void initGameTimeInput() {
-        message = "\f\vEnter speel-\ntijd (1-15):\n";
+        message = "\f\vEnter game\ntime (1-15):\n";
         minTime = 1;
         maxTime = 15;
         confGameTime = true;
@@ -202,15 +213,15 @@ private:
 
     void initDistributeSettings() {
          display.displayMessage(
-            "\f\v* - Settings\n    versturen",
+            "\f\v* - Send\n    settings",
             Display::Font::Mode8x8);
     }
 
     void initCommandSelection() {
         display.displayMessage(
-            "\f\vC - Settings\n    invoeren\n"
-            "D - Lokaal\n    transferen\n"
-            "* - Transfer\n    versturen",
+            "\f\vC - Enter\n    settings\n"
+            "D - Local\n    transfer\n"
+            "* - Send\n    transfer",
             Display::Font::Mode8x8);
     }
 public:
