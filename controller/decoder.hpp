@@ -139,7 +139,7 @@ private:
                             data = dataInChannel.read();
                             //hwlib::cout<<hwlib::bin<<data<<"\n";
                             if(data==previousData){ 
-                                previousData=0xffff;
+                                data=0xffff;
                                // hwlib::cout<<"DOUBLE: "<<hwlib::bin<<data<<hwlib::dec<<"\n";
                             }else{
                                 if(checkSum(data)){
