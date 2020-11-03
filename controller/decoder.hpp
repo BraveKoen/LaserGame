@@ -92,8 +92,8 @@ private:
                             }else{
                                 if(checkSum(data)){
                                     if((!((data>>9)&0b01)) && (!((data>>10)&0b011111))){ //Check for time message
+                                        hwlib::cout<<"Time: "<<((data>>5) & 0b1111)<<"\n";
                                         registerControl.gameTime((data>>5) & 0b1111);
-                                        //hwlib::cout<<"Time: "<<((data>>5) & 0b1111)<<"\n";
                                         previousData=data;
                                         subState = WAITINGFORCOUNTDOWN;
                                     }else{
@@ -123,6 +123,7 @@ private:
                             }
                             break;
                     }
+                    break;
             }
         }
     }
