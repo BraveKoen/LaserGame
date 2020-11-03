@@ -31,11 +31,11 @@ private:
     TransferControl & transferControl;
 
 public:
-    /// \brief
-    /// Constructor Decoder
-    /// \details
-    /// This constructor has ReceiveHitControl, GameTimeControl, RegisterControl and TransferControl by reference.
-    /// dataChannel is created.
+/// \brief
+/// Constructor Decoder
+/// \details
+/// This constructor has ReceiveHitControl, GameTimeControl, RegisterControl and TransferControl by reference.
+/// dataChannel is created.
     Decoder(ReceiveHitControl & receiveHitControl, GameTimeControl & gameTimeControl, RegisterControl & registerControl, TransferControl & transferControl):
     task("DecoderTask"),
     dataInChannel(this, "dataInChannel"),
@@ -49,7 +49,6 @@ public:
 /// Function decoderData(uint_fast16_t data): void
 /// \details
 /// Writes the data to dataInChannel.
-    ReceiveHitControl(
     void decodeData(const uint_fast16_t & data){
         dataInChannel.write(data);
     }
