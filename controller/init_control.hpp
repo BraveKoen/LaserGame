@@ -110,7 +110,7 @@ private:
                 // subState = SubState::RequestInput;
             } else {
                 display.displayMessage(
-                    "\f\vInvoer\nongeldig!",
+                    "\f\vInput\ninvalid!",
                     Display::Font::Mode8x8);
                 hwlib::wait_ms(1'000);
                 buttonChannel.clear();
@@ -142,7 +142,7 @@ private:
                 sendControl.sendMessage(0b0);
                 sendControl.sendMessage(countdown << 5);
                 countdownActive = true;
-                display.displayMessage("\f\vSettings\nverstuurd!", Display::Font::Mode8x8);
+                display.displayMessage("\f\vSettings\nsent!", Display::Font::Mode8x8);
                 hwlib::wait_ms(1'000);
                 buttonChannel.clear();
                 initDistributeSettings();
@@ -179,7 +179,7 @@ private:
             // mainState = MainState::CommandSelection;
         } else if (buttonID == '*') {
             sendControl.sendMessage(0b1000'10000);
-            display.displayMessage("\f\vTransfer\nverstuurd!", Display::Font::Mode8x8);
+            display.displayMessage("\f\vTransfer\ncommand sent!", Display::Font::Mode8x8);
             hwlib::wait_ms(1'000);
             buttonChannel.clear();
             initCommandSelection();
@@ -187,7 +187,7 @@ private:
     }
 
     void initGameTimeInput() {
-        message = "\f\vEnter speel-\ntijd (1-15):\n";
+        message = "\f\vEnter game\ntime (1-15):\n";
         minTime = 1;
         maxTime = 15;
         confGameTime = true;
@@ -202,15 +202,15 @@ private:
 
     void initDistributeSettings() {
          display.displayMessage(
-            "\f\v* - Settings\n    versturen",
+            "\f\v* - Send\n    settings",
             Display::Font::Mode8x8);
     }
 
     void initCommandSelection() {
         display.displayMessage(
-            "\f\vC - Settings\n    invoeren\n"
-            "D - Lokaal\n    transferen\n"
-            "* - Transfer\n    versturen",
+            "\f\vC - Enter\n    settings\n"
+            "D - Local\n    transfer\n"
+            "* - Send\n    transfer",
             Display::Font::Mode8x8);
     }
 public:
