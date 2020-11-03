@@ -16,7 +16,7 @@ public:
         task("trigger task"),
         buttonID{buttonID},
         sw{sw_pin},
-        buttonClock(this, 100000, "button clock")
+        buttonClock(this, 100'000, "button clock")
     {}
 
     void main() override {

@@ -3,14 +3,36 @@
 
 #include "hwlib.hpp"
 
-class glcd_oled_cooperative : public hwlib::glcd_oled_i2c_128x64_buffered {
+class glcd_oled_cooperative :
+    public hwlib::ssd1306_i2c,
+    public hwlib::window
+{
+private:
+    static auto constexpr wsize = hwlib::xy(128, 64);
+    uint8_t buffer[wsize.x * wsize.y / 8];
+
+    void write_implementation(
+        hwlib::xy pos,
+        hwlib::color col
+    ) override {
+        int a = pos.x + (pos.y / 8) * size.x;
+
+        if (col == hwlib::white) {
+            buffer[a] |= (0x01 << (pos.y % 8));
+        } else {
+            buffer[a] &= ~(0x01 << (pos.y % 8));
+        }
+    }
 public:
-    glcd_oled_cooperative(
-        hwlib::i2c_bus& bus,
-        int address = 0x3C
-    ):
-        glcd_oled_i2c_128x64_buffered(bus, address)
-    {}
+    glcd_oled_cooperative(hwlib::i2c_bus& bus, int address = 0x3C):
+        ssd1306_i2c(bus, address),
+        window(wsize, hwlib::white, hwlib::black)
+    {
+        bus.write(address).write(
+            hwlib::ssd1306_initialization,
+            sizeof(hwlib::ssd1306_initialization)
+            / sizeof(*hwlib::ssd1306_initialization));
+    }
 
     void flush() override {
         command(hwlib::ssd1306_commands::column_addr, 0, size.x - 1);

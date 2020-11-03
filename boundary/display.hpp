@@ -3,7 +3,7 @@
 
 #include "hwlib.hpp"
 #include "rtos.hpp"
-// #include "glcd_oled_cooperative.hpp"
+#include "glcd_oled_cooperative.hpp"
 
 class Display: public rtos::task<> {
 private:
@@ -24,27 +24,37 @@ public:
         sda(sdaPin),
         i2cBus(scl, sda),
         display(i2cBus),
+        font{
+            hwlib::font_default_8x8(),
+            hwlib::font_default_16x16()
+        },
         terminal{
-            .mode8x8{display, hwlib::font_default_8x8()},
-            .mode16x16{display, hwlib::font_default_16x16()}
+            .mode8x8{display, font.mode8x8},
+            .mode16x16{display, font.mode16x16}
         },
         messagePool("message pool"),
         messageFlag(this, "message flag"),
         clearFlag(this, "clear flag")
-    {}
+    {
+        //display.clear();
+        //auto const *str = "wx: ";
+        //Display::messageType = {str, Font::Mode8x8};
+        //messagePool.write(messageType);
 
-    // note: these function overloads require flag -std=c++2a
+        //display.flush();
+        //terminal.mode8x8 << messagePool.read().type.string;
+        //terminal.mode8x8 << "\nnope\ndone8\n";
+        //display.flush();
+        //hwlib::wait_ms_busy(5'000);
+    }
+
     void displayMessage(
         char const *message,
         Font font = Font::Mode16x16
     ) {
-        // string literals have static storage duration so
-        // writing the address of it to a pool seems fine
-        messagePool.write({
-            .tag{MessageType::Tag::String},
-            .type{.string{message}},
-            .font{font}
-        });
+        messagePool.write({message, font});
+        //static MessageType messageType{message, font};
+        //messagePool.write(messageType);
         messageFlag.set();
     }
 
@@ -52,11 +62,9 @@ public:
         char value,
         Font font = Font::Mode16x16
     ) {
-        messagePool.write({
-            .tag{MessageType::Tag::Letter},
-            .type{.letter{value}},
-            .font{font}
-        });
+        messagePool.write({value, font});
+        //static MessageType messageType{value, font};
+        //messagePool.write(messageType);
         messageFlag.set();
     }
 
@@ -64,11 +72,9 @@ public:
         int value,
         Font font = Font::Mode16x16
     ) {
-        messagePool.write({
-            .tag{MessageType::Tag::Number},
-            .type{.number{value}},
-            .font{font}
-        });
+        messagePool.write({value, font});
+        //static MessageType messageType{value, font};
+        //messagePool.write(messageType);
         messageFlag.set();
     }
 
@@ -77,11 +83,9 @@ public:
         int value,
         Font font = Font::Mode16x16
     ) {
-        messagePool.write({
-            .tag{MessageType::Tag::Pair},
-            .type{.pair{.string{message}, .number{value}}},
-            .font{font}
-        });
+        messagePool.write({message, value, font});
+        //static MessageType messageType{message, value, font};
+        //messagePool.write(messageType);
         messageFlag.set();
     }
 
@@ -103,20 +107,30 @@ private:
         Inactive,
         Clearing
     };
-    hwlib::i2c_bus_bit_banged_scl_sda i2cBus;
-    std::conditional_t<
-        false,
-        // glcd_oled_cooperative,
-        int,
-        hwlib::glcd_oled
-    > display;
-    struct {
-        hwlib::terminal_from mode8x8;
-        hwlib::terminal_from mode16x16;
-    } terminal;
-    // this type of construction ultimately saves
-    // some additional pools and an extra flush
+
     struct MessageType {
+        MessageType(char const *string, Font font):
+            tag{Tag::String},
+            type{.string{string}},
+            font{font}
+        {}
+        MessageType(char letter, Font font):
+            tag{Tag::Letter},
+            type{.letter{letter}},
+            font{font}
+        {}
+        MessageType(int number, Font font):
+            tag{Tag::Number},
+            type{.number{number}},
+            font{font}
+        {}
+        MessageType(char const *string, int number, Font font):
+            tag{Tag::Pair},
+            type{.pair{string, number}},
+            font{font}
+        {}
+        MessageType() = default;
+
         enum class Tag: uint8_t {
             String,
             Letter,
@@ -134,6 +148,22 @@ private:
         } type;
         Font font;
     };
+
+    hwlib::i2c_bus_bit_banged_scl_sda i2cBus;
+    std::conditional_t<
+        true,
+        glcd_oled_cooperative,
+        hwlib::glcd_oled
+    > display;
+    struct {
+        hwlib::font_default_8x8 mode8x8;
+        hwlib::font_default_16x16 mode16x16;
+    } font;
+    struct {
+        hwlib::terminal_from mode8x8;
+        hwlib::terminal_from mode16x16;
+    } terminal;
+    //static MessageType messageType;
     State state;
 
     rtos::pool<MessageType> messagePool;
@@ -152,29 +182,35 @@ private:
     }
 
     void clearing() {
-        display.clear(); hwlib::cout << hwlib::endl; // <---------
+        display.clear();
+        //hwlib::cout << hwlib::endl; // change this <---------
         state = State::Inactive;
     }
 
     void writeMessage() {
-        auto const message = messagePool.read();
+        auto const& message = messagePool.read();
         auto& output{
-            hwlib::cout  //<< message << "\n";
-            // message.font == Font::Mode16x16
-            //     ? terminal.mode16x16
-            //     : terminal.mode8x8
+            //hwlib::cout // change this  <-----------------------
+            message.font == Font::Mode16x16
+                ? terminal.mode16x16
+                : terminal.mode8x8
         };
         switch (message.tag) {
         case MessageType::Tag::String:
+            //hwlib::cout << "string" << message.type.string;
+            //terminal.mode8x8 << "test";
             output << message.type.string;
             break;
         case MessageType::Tag::Letter:
+            //hwlib::cout << "letter";
             output << message.type.letter;
             break;
         case MessageType::Tag::Number:
+            //hwlib::cout << "number";
             output << message.type.number;
             break;
         case MessageType::Tag::Pair:
+            //hwlib::cout << "pair";
             output
                 << message.type.pair.string
                 << message.type.pair.number;
