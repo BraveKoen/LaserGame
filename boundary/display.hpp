@@ -5,6 +5,10 @@
 #include "rtos.hpp"
 #include "glcd_oled_cooperative.hpp"
 
+/// \brief
+/// Class Display
+/// \details
+/// .
 class Display: public rtos::task<> {
 private:
     hwlib::target::pin_oc scl;
@@ -14,7 +18,11 @@ public:
         Mode8x8,
         Mode16x16
     };
-
+/// \brief
+/// Constructor Display
+/// \details
+/// This constructor has sclPin and a sdaPin
+/// messagePool, messageFlag and clearFlag are created.
     Display(
         hwlib::target::pins sclPin,
         hwlib::target::pins sdaPin
@@ -37,6 +45,12 @@ public:
         clearFlag(this, "clear flag")
     {}
 
+/// \brief
+/// Function displayMessage needs a char message and a font
+/// \details
+/// This constructor has gameInfo, shotControl and Display by reference.
+/// The constructor will also make buzzer with pin d9.
+/// hitReceivedChannel, gameOverFlag and startFlag are created.
     void displayMessage(
         char const *message,
         Font font = Font::Mode16x16
