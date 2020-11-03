@@ -58,10 +58,10 @@ private:
                     auto array_hits = gameInfo.getHits();
                     hwlib::cout << "Player data: "<< gameInfo.getPlayerID() << "\n";
                     for(auto hit : array_hits){
-                        hwlib::cout << "Player: " << hit[0] << " Damage done: "<< hit[1]<< "\n";
                         if(hit[1] == 0){
                             break;
                         }
+                        hwlib::cout << "Player: " << hit[0] << " Damage done: "<< hit[1]<< "\n";
                     }
                     state = INACTIVE;
                     break;

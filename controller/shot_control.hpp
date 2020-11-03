@@ -100,6 +100,7 @@ private:
         unsigned int weapon;
         unsigned int playerID;
         unsigned int button;
+        timerWeaponCooldown.set(100);
         for(;;){
             switch(state){
                 case INACTIVE:
@@ -114,6 +115,7 @@ private:
                         wait(timerWeaponCooldown);
                         button = buttonPool.read();
                         if(button == '*' || button == 'T'){
+                            hwlib::wait_ms(3);
                             sendControl.sendMessage((playerID<<5)+ weapon );
                             timerWeaponCooldown.set(cooldownForWeapon[weapon]*1'000);
                         }

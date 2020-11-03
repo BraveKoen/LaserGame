@@ -91,9 +91,9 @@ private:
                     if(counter < 16){
                         counter++;
                     }else{
+                        hwlib::wait_ms(3);
                         state = INACTIVE;
                         redLed.write(0);
-                        hwlib::wait_ms(3);
                     }
                     break;
             }
