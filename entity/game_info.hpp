@@ -20,7 +20,10 @@ public:
         gameTimePool("gameTimePool"),
         weaponTypePool("weaponTypePool"),
         hitsPool("hitsPool")
-    {}
+    {
+        playerIDPool.write(1);
+        weaponTypePool.write(0);
+    }
 
     void setWeapon(int type) { weaponTypePool.write(type); }
     
