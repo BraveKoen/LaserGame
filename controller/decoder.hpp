@@ -8,6 +8,10 @@
 #include "register_control.hpp"
 #include "transfer_control.hpp"
 
+/// \brief
+/// Class Decoder
+/// \details
+/// decode the messages in the pool and sends it to the other controllers
 class Decoder : public rtos::task<>{
 
     enum states {INACTIVE, DECODING};
@@ -27,6 +31,11 @@ private:
     TransferControl & transferControl;
 
 public:
+    /// \brief
+    /// Constructor Decoder
+    /// \details
+    /// This constructor has ReceiveHitControl, GameTimeControl, RegisterControl and TransferControl by reference.
+    /// dataChannel is created.
     Decoder(ReceiveHitControl & receiveHitControl, GameTimeControl & gameTimeControl, RegisterControl & registerControl, TransferControl & transferControl):
     task("DecoderTask"),
     dataInChannel(this, "dataInChannel"),
@@ -36,15 +45,41 @@ public:
     transferControl(transferControl)
     {}
 
+/// \brief
+/// Function decoderData(uint_fast16_t data): void
+/// \details
+/// Writes the data to dataInChannel.
+    ReceiveHitControl(
     void decodeData(const uint_fast16_t & data){
         dataInChannel.write(data);
     }
 
 private:
+
+/// \brief
+/// Function checkSum(uint_fast16_t data)
+/// \details
+/// Checksum. bits 1-5 XOR bits 6-10 == bits 11-15
     bool checkSum(uint_fast16_t data){ //Checksum. bits 1-5 XOR bits 6-10 == bits 11-15
         return (((data>>10) & 0b11111) ^ ((data>>5) & 0b11111))==(data & 0b11111);
     }
 
+/// \brief
+/// main Decoder
+/// \details
+/// there are two main states INACTIVE and DECODING
+/// there are three sub states DEFAULT, WAITINGFORTIME and WAITINGFORCOUNTDOWN
+/// case INACTIVE
+///     Waits for data in dataInChannel when there is data State = DECODING
+/// case DECODING
+///     case DEFAULT
+///         All data is sent twice, to increase succes rate. We dont want to do everything twice so we make sure to check first.
+///         The message can/should never be 0xffff so we can use that to make sure this is never true more than twice in a row.
+///         If someone is shot by the same player twice things should still mostly work even if one of the two messages is lost somewhere, it will simply continue on the second of the two
+///     case WAITINGFORTIME
+///         Cheching for a time message
+///     case WAITINGFORCOUNTDOWN
+///         send message to gameTimeControl to give the given time.
     void main(){
         uint_fast16_t data=0xffff; //16 1's. Data should never take this value aside from when initialized here.
         uint_fast16_t previousData=0;
