@@ -62,7 +62,6 @@ private:
                 case COUNTDOWN:
                     if(countdown <= 0){
                         display.displayMessage("\t0000GO!");
-                        shotControl.start();
                         receiveHitControl.start();
                         state = GAMETIME;
                         break;

@@ -29,7 +29,8 @@ public:
                 wait(buttonClock);
                 updateOnPressed(); 
                 break;
-            default: break;
+            default:
+                break;
             }
         }
     }
