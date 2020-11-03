@@ -35,26 +35,13 @@ public:
         messagePool("message pool"),
         messageFlag(this, "message flag"),
         clearFlag(this, "clear flag")
-    {
-        //display.clear();
-        //auto const *str = "wx: ";
-        //Display::messageType = {str, Font::Mode8x8};
-        //messagePool.write(messageType);
-
-        //display.flush();
-        //terminal.mode8x8 << messagePool.read().type.string;
-        //terminal.mode8x8 << "\nnope\ndone8\n";
-        //display.flush();
-        //hwlib::wait_ms_busy(5'000);
-    }
+    {}
 
     void displayMessage(
         char const *message,
         Font font = Font::Mode16x16
     ) {
         messagePool.write({message, font});
-        //static MessageType messageType{message, font};
-        //messagePool.write(messageType);
         messageFlag.set();
     }
 
@@ -63,8 +50,6 @@ public:
         Font font = Font::Mode16x16
     ) {
         messagePool.write({value, font});
-        //static MessageType messageType{value, font};
-        //messagePool.write(messageType);
         messageFlag.set();
     }
 
@@ -73,8 +58,6 @@ public:
         Font font = Font::Mode16x16
     ) {
         messagePool.write({value, font});
-        //static MessageType messageType{value, font};
-        //messagePool.write(messageType);
         messageFlag.set();
     }
 
@@ -84,8 +67,6 @@ public:
         Font font = Font::Mode16x16
     ) {
         messagePool.write({message, value, font});
-        //static MessageType messageType{message, value, font};
-        //messagePool.write(messageType);
         messageFlag.set();
     }
 
@@ -163,7 +144,6 @@ private:
         hwlib::terminal_from mode8x8;
         hwlib::terminal_from mode16x16;
     } terminal;
-    //static MessageType messageType;
     State state;
 
     rtos::pool<MessageType> messagePool;
@@ -183,34 +163,27 @@ private:
 
     void clearing() {
         display.clear();
-        //hwlib::cout << hwlib::endl; // change this <---------
         state = State::Inactive;
     }
 
     void writeMessage() {
         auto const& message = messagePool.read();
         auto& output{
-            //hwlib::cout // change this  <-----------------------
             message.font == Font::Mode16x16
                 ? terminal.mode16x16
                 : terminal.mode8x8
         };
         switch (message.tag) {
         case MessageType::Tag::String:
-            //hwlib::cout << "string" << message.type.string;
-            //terminal.mode8x8 << "test";
             output << message.type.string;
             break;
         case MessageType::Tag::Letter:
-            //hwlib::cout << "letter";
             output << message.type.letter;
             break;
         case MessageType::Tag::Number:
-            //hwlib::cout << "number";
             output << message.type.number;
             break;
         case MessageType::Tag::Pair:
-            //hwlib::cout << "pair";
             output
                 << message.type.pair.string
                 << message.type.pair.number;
