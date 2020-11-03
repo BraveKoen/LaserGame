@@ -116,7 +116,7 @@ private:
                         button = buttonPool.read();
                         if(button == '*' || button == 'T'){
                             hwlib::wait_ms(3);
-                            sendControl.sendMessage((playerID<<5)+ weapon );
+                            sendControl.sendMessage(((playerID<<5)+ weapon)|0b011000 );
                             timerWeaponCooldown.set(cooldownForWeapon[weapon]*1'000);
                         }
                     }else if(event == gameOverFlag){

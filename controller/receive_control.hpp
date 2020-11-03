@@ -33,7 +33,6 @@ private:
         uint_fast8_t messageSize=0;
         uint_fast16_t message=0;
         uint_fast8_t signalHigh=0;
-
         for(;;){
             switch(state){
                 case WAITING:
