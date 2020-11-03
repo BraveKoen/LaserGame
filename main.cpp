@@ -65,6 +65,13 @@ int main() {
         display,
         keypad
     );
+
+    auto receiveControl = ReceiveControl(
+        receiveHitControl,
+        gameTimeControl,
+        registerControl,
+        transferControl
+    );
    //  (void)initControl;
    //  (void)registerControl;
     rtos::run();

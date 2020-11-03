@@ -28,7 +28,6 @@ private:
 
     using buttonType = int;
     rtos::channel<buttonType, 16> buttonChannel;
-    // rtos::flag gameOverFlag;
     rtos::clock countdownClock; // update name in CCD accordingly
 public:
 /// \brief
@@ -63,10 +62,6 @@ public:
     void buttonPressed(int buttonID) override {
         buttonChannel.write(buttonID);
     }
-
-    // void gameOver() {
-    //     gameOverFlag.set();
-    // }
 private:
     enum class MainState {
         ProcessInput,
@@ -95,7 +90,6 @@ private:
     void processInput() {
         switch (subState) {
         case SubState::RequestInput:
-            //display.clear();
             display.displayMessage(message, Display::Font::Mode8x8);
             buttonID = buttonChannel.read();
             time = 0;
@@ -126,13 +120,19 @@ private:
                 }
                 // subState = SubState::RequestInput;
             } else {
-                // display.clear();
-                display.displayMessage("\f\vInvoer\nongeldig!", Display::Font::Mode8x8);
+                display.displayMessage(
+                    "\f\vInput\ninvalid!",
+                    Display::Font::Mode8x8);
                 hwlib::wait_ms(1'000);
+                buttonChannel.clear();
                 // subState = SubState::RequestInput;
             }
             subState = SubState::RequestInput;
         } else if (input >= '0' and input <= '9') {
+            display.displayMessage(
+                static_cast<char>(buttonID),
+                Display::Font::Mode8x8
+            );
             display.displayMessage(static_cast<char>(buttonID), Display::Font::Mode8x8);
             time = time * 10 + input - '0';
             inputSize++;
@@ -153,9 +153,9 @@ private:
                 sendControl.sendMessage(0b0);
                 sendControl.sendMessage(countdown << 5);
                 countdownActive = true;
-                // display.clear();
-                display.displayMessage("\f\vSettings\nverstuurd!", Display::Font::Mode8x8);
+                display.displayMessage("\f\vSettings\nsent!", Display::Font::Mode8x8);
                 hwlib::wait_ms(1'000);
+                buttonChannel.clear();
                 initDistributeSettings();
             }
             // mainState = MainState::DistributeSettings;
@@ -170,8 +170,8 @@ private:
     void gameInProgress() {
         // add default parameter to GameTimeControl::start(countdown = 0) ?
         gameTimeControl.start(0);
-        // wait(gameOverFlag);
         hwlib::wait_ms(gameTime * 60'000);
+        buttonChannel.clear();
         initCommandSelection();
         mainState = MainState::CommandSelection;
     }
@@ -190,15 +190,15 @@ private:
             // mainState = MainState::CommandSelection;
         } else if (buttonID == '*') {
             sendControl.sendMessage(0b1000'10000);
-            // display.clear();
-            display.displayMessage("\f\vTransfer\nverstuurd!", Display::Font::Mode8x8);
+            display.displayMessage("\f\vTransfer\ncommand sent!", Display::Font::Mode8x8);
             hwlib::wait_ms(1'000);
+            buttonChannel.clear();
             initCommandSelection();
         }
     }
 
     void initGameTimeInput() {
-        message = "\f\vEnter speel-\ntijd (1-15):\n";
+        message = "\f\vEnter game\ntime (1-15):\n";
         minTime = 1;
         maxTime = 15;
         confGameTime = true;
@@ -212,18 +212,16 @@ private:
     }
 
     void initDistributeSettings() {
-        // display.clear();
-        display.displayMessage(
-            "\f\v* - Settings\n    versturen",
+         display.displayMessage(
+            "\f\v* - Send\n    settings",
             Display::Font::Mode8x8);
     }
 
     void initCommandSelection() {
-        // display.clear();
         display.displayMessage(
-            "\f\vC - Settings\n    invoeren\n"
-            "D - Lokaal\n    transferen\n"
-            "* - Transfer\n    versturen",
+            "\f\vC - Enter\n    settings\n"
+            "D - Local\n    transfer\n"
+            "* - Send\n    transfer",
             Display::Font::Mode8x8);
     }
 public:
