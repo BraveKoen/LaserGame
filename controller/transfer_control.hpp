@@ -37,25 +37,23 @@ public:
     }
 
 private:
+    /// \brief
+    /// This private function puts the hits received in a hwlib::cout if requested to do so.
+    /// \details
+    /// case INACTIVE
+    ///     When this case is at play, it waits until the transferflag is set.
+    ///     Then it puts the state to active and breaks so it can go back to the switch and move to the active state.
+    /// case ACTIVE
+    ///     This case pulls the hits from the gameInfo and hwlib::cout's them into the terminal of the connected PC,
+    ///     (wiht an open terminal able to read).
+    ///     After completing its task it will put the state back to inactive.
     void main(){
         for(;;){
-
             switch(state){
-                /// \brief
-                /// The inactive state waits for the transferFlag and moves to active.
-                /// \details
-                /// When this case is at play, it waits until the transferflag is set.
-                /// Then it puts the state to active and breaks so it can go back to the switch and move to the active state.
                 case INACTIVE:
                     wait(transferFlag);
                     state = ACTIVE;
                     break;
-                /// \brief
-                /// The active state gets the hits and hwlib::cout's them into the terminal.
-                /// \details
-                /// This case pulls the hits from the gameInfo and hwlib::cout's them into the terminal of the connected PC,
-                /// (wiht an open terminal able to read).
-                /// After completing its task it will put the state back to inactive.
                 case ACTIVE:
                     auto array_hits = gameInfo.getHits();
                     hwlib::cout << "Player data: "<< gameInfo.getPlayerID() << "\n";
