@@ -59,6 +59,7 @@ private:
                 case INACTIVE:
                     wait( startFlag );
                     lives = 100;
+                    display.displayMessage("\f\t0002Lives:\t0003", lives);
                     playerID = gameInfo.getPlayerID();
                     state = ACTIVE;
                     break;

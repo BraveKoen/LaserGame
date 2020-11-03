@@ -21,7 +21,7 @@ public:
         weaponTypePool("weaponTypePool"),
         hitsPool("hitsPool")
     {
-        playerIDPool.write(1);
+        playerIDPool.write(2);
         weaponTypePool.write(0);
     }
 
