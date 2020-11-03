@@ -86,10 +86,12 @@ private:
         uint8_t playerID = 0;
         std::array<uint8_t, 2> hit = {0,0};
         for(;;){
+            //hwlib::cout<<lives;
             switch(state){
                 case INACTIVE:
                     wait( startFlag );
                     lives = 100;
+                    display.displayMessage("\t002Lives:\t0003", lives);
                     playerID = gameInfo.getPlayerID();
                     state = ACTIVE;
                     break;
@@ -99,7 +101,7 @@ private:
                         break;
                     }else if((lives - hit[1]) <= 0){
                         gameOverFlag.set();
-                        display.displayMessage("\t0002Lives:\t00003", 0);
+                        display.displayMessage("\t0002Lives:\t00030",0);
                         buzzer.playSound(1);
                         hwlib::wait_ms((hit[1]/20)*1000);
                         buzzer.playSound(0);
@@ -109,7 +111,13 @@ private:
                     }else{
                         lives -= hit[1];
                         gameInfo.registerHit(hit[0], hit[1]);
-                        display.displayMessage("\t0002Lives:\t0003", lives);
+                        if(lives<10){
+                            display.displayMessage("\t0002Lives:\t000300", lives);
+                        }else if(lives<100){
+                            display.displayMessage("\t0002Lives:\t00030", lives);
+                        }else{
+                            display.displayMessage("\t0002Lives:\t0003", lives);
+                        }
                         buzzer.playSound(1);
                         hwlib::wait_ms((hit[1]/20)*1000);
                         buzzer.playSound(0);

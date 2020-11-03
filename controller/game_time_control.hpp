@@ -69,7 +69,11 @@ private:
                         state = GAMETIME;
                         break;
                     }else{
-                        display.displayMessage("\t0000Start:\t0001", countdown); 
+                        if(countdown<10){
+                            display.displayMessage("\t0000Start:\t00010", countdown);
+                        }else{
+                            display.displayMessage("\t0000Start:\t0001", countdown); 
+                        }
                         countdown--;
                         hwlib::wait_ms(1000);
                         break;
@@ -78,8 +82,16 @@ private:
                     if(gameTime > 1){
                         hwlib::wait_ms(1000);
                         gameTime--;
-                        display.displayMessage("\t0000Timer:\t0001", gameTime/60); 
-                        display.displayMessage(":", gameTime%60); 
+                        if(gameTime/60<10){
+                            display.displayMessage("\t0000Timer:\t00010", gameTime/60);
+                        }else{
+                            display.displayMessage("\t0000Timer:\t0001", gameTime/60);
+                        }
+                        if(gameTime%60<10){
+                            display.displayMessage(":0", gameTime%60);
+                        }else{
+                            display.displayMessage(":", gameTime%60); 
+                        }
                         break;
                     }else{
                         // initControl.gameOver();
