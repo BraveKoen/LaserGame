@@ -4,10 +4,14 @@
 #include "hwlib.hpp"
 #include "rtos.hpp"
 #include "../entity/game_info.hpp"
+#include "init_control.hpp"
 #include "shot_control.hpp"
 #include "../boundary/display.hpp"
 #include "../boundary/buzzer.hpp"
 #include <array>
+
+class InitControl;
+
 /// \brief
 /// Class ReceiveHitControl keeps trach of lives and controls the Buzzer
 /// \details
@@ -18,6 +22,7 @@ enum state_t {INACTIVE, ACTIVE};
 
 private:
     GameInfo& gameInfo;
+    InitControl& initControl;
     ShotControl& shotControl;
     Display& display;
     Buzzer buzzer;
@@ -36,42 +41,29 @@ public:
     /// hitReceivedChannel, gameOverFlag and startFlag are created.
     ReceiveHitControl(
         GameInfo& gameInfo,
+        InitControl& initControl,
         ShotControl& shotControl,
         Display& display
-    ):
-        task("ReceiveHitControl"),
-        gameInfo(gameInfo),
-        shotControl(shotControl),
-        display(display),
-        buzzer(hwlib::target::pins::d9),
-        hitReceivedChannel(this, "hitReceivedChannel"),
-        gameOverFlag(this, "gameOverFlag"),
-        startFlag(this, "startFlag")
-    {} 
+    );
+
     /// \brief
     /// hitReceived uint8_t playerID, uint8_t damage: void
     /// \details
     /// The function write to hitReceivedChannel that it is hit by a player with the PlayerId and the damage.
-    void hitReceived(uint8_t playerID, uint8_t damage){
-        hitReceivedChannel.write({playerID, damage});
-    }
+    void hitReceived(uint8_t playerID, uint8_t damage);
 
     /// \brief
     /// gameOver is to set the flag
     /// \details
     /// will set the flag gameOverFlag.
-    void gameOver(){
-        gameOverFlag.set();
-    }
+    void gameOver();
 
     /// \brief
     /// start is to set the flag
     /// \details
     /// will set the flag startFlag.
-    void start(){
-        startFlag.set();
-    }
-private:
+    void start();
+
     /// \brief
     /// main RegisterControl
     /// \details
@@ -81,51 +73,7 @@ private:
     /// case ACTIVE
     ///     hitReceivedChannel will read when there is a new hit, how higher the damage how longer to buzzer will go off.
     ///     if lives is below 0 it will send a gameOverFlag and the state go in to INACTIVE
-    void main(){
-        int lives = 0;
-        uint8_t playerID = 0;
-        std::array<uint8_t, 2> hit = {0,0};
-        for(;;){
-            //hwlib::cout<<lives;
-            switch(state){
-                case INACTIVE:
-                    wait( startFlag );
-                    lives = 100;
-                    display.displayMessage("\t002Lives:\t0003", lives);
-                    playerID = gameInfo.getPlayerID();
-                    state = ACTIVE;
-                    break;
-                case ACTIVE:
-                    hit = hitReceivedChannel.read();
-                    if(hit[0]==playerID){
-                        break;
-                    }else if((lives - hit[1]) <= 0){
-                        gameOverFlag.set();
-                        display.displayMessage("\t0002Lives:\t00030",0);
-                        buzzer.playSound(1);
-                        hwlib::wait_ms((hit[1]/20)*1000);
-                        buzzer.playSound(0);
-                        gameInfo.registerHit(hit[0], lives);
-                        state = INACTIVE;
-                        break;
-                    }else{
-                        lives -= hit[1];
-                        gameInfo.registerHit(hit[0], hit[1]);
-                        if(lives<10){
-                            display.displayMessage("\t0002Lives:\t000300", lives);
-                        }else if(lives<100){
-                            display.displayMessage("\t0002Lives:\t00030", lives);
-                        }else{
-                            display.displayMessage("\t0002Lives:\t0003", lives);
-                        }
-                        buzzer.playSound(1);
-                        hwlib::wait_ms((hit[1]/20)*1000);
-                        buzzer.playSound(0);
-                        break;
-                    }
-            }
-        }
-    }
+    void main() override;
 };
 
 
