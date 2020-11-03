@@ -8,7 +8,10 @@
 #include "../boundary/display.hpp"
 #include "../boundary/buzzer.hpp"
 #include <array>
-
+/// \brief
+/// Class ReceiveHitControl keeps trach of lives and controls the Buzzer
+/// \details
+/// This class is for keeping track of the lives and that you can not shoot yourself.
 class ReceiveHitControl : public rtos::task<>{
 
 enum state_t {INACTIVE, ACTIVE};
@@ -25,6 +28,12 @@ private:
 
     state_t state = INACTIVE;
 public:
+    /// \brief
+    /// Constructor ReceiveHitControl
+    /// \details
+    /// This constructor has gameInfo, shotControl and Display by reference.
+    /// The constructor will also make buzzer with pin d9.
+    /// hitReceivedChannel, gameOverFlag and startFlag are created.
     ReceiveHitControl(
         GameInfo& gameInfo,
         ShotControl& shotControl,
@@ -38,18 +47,40 @@ public:
         hitReceivedChannel(this, "hitReceivedChannel"),
         gameOverFlag(this, "gameOverFlag"),
         startFlag(this, "startFlag")
-    {}
-
+    {} 
+    /// \brief
+    /// hitReceived uint8_t playerID, uint8_t damage: void
+    /// \details
+    /// The function write to hitReceivedChannel that it is hit by a player with the PlayerId and the damage.
     void hitReceived(uint8_t playerID, uint8_t damage){
         hitReceivedChannel.write({playerID, damage});
     }
+
+    /// \brief
+    /// gameOver is to set the flag
+    /// \details
+    /// will set the flag gameOverFlag.
     void gameOver(){
         gameOverFlag.set();
     }
+
+    /// \brief
+    /// start is to set the flag
+    /// \details
+    /// will set the flag startFlag.
     void start(){
         startFlag.set();
     }
 private:
+    /// \brief
+    /// main RegisterControl
+    /// \details
+    /// case INACTIVE
+    ///     Waits for startFlag to be set.
+    ///     if startFlag is set it will set lives to 100, playerID to gameInfo.getPlayerID and STATE to ACTIVE.
+    /// case ACTIVE
+    ///     hitReceivedChannel will read when there is a new hit, how higher the damage how longer to buzzer will go off.
+    ///     if lives is below 0 it will send a gameOverFlag and the state go in to INACTIVE
     void main(){
         int lives = 0;
         uint8_t playerID = 0;
@@ -59,7 +90,6 @@ private:
                 case INACTIVE:
                     wait( startFlag );
                     lives = 100;
-                    display.displayMessage("\f\t0002Lives:\t0003", lives);
                     playerID = gameInfo.getPlayerID();
                     state = ACTIVE;
                     break;
