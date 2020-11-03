@@ -97,7 +97,7 @@ private:
                             if(data==previousData){ //All data is sent twice, to increase succes rate. We dont want to do everything twice so we make sure to check first. 
                                 previousData=0xffff;//The message can/should never be 0xffff so we can use that to make sure this is never true more than twice in a row.
                                // hwlib::cout<<"DOUBLE: "<<hwlib::bin<<data<<hwlib::dec<<"\n";
-                                state = INACTIVE;   //If someone is shot by the same player twice things should still mostly work even if one of the two messages is lost somewhere, it will simply continue on the second of the two.
+                               //If someone is shot by the same player twice things should still mostly work even if one of the two messages is lost somewhere, it will simply continue on the second of the two.
                             }else{
                                 if(checkSum(data)){ 
                                     if(data==0b0){ //Start command
@@ -108,7 +108,6 @@ private:
                                     }else if(data==10000'10000){ //Check for transfer command
                                         transferControl.transferCommand();
                                         //hwlib::cout<<"Transfercomman\n";
-                                        state = INACTIVE;
                                     }else if(((data>>8) & 0b11)==0b11){ //Check for shot command.
                                         receiveHitControl.hitReceived(((data>>10) & 0b11111), damageForType[(data>>5) & 0b111]);
                                         //hwlib::cout<<"Hitreceived, PlayerID: "<<((data>>10) & 0b11111)<<" Damage: "<<damageForType[((data>>5) & 0b111)]<<"\n";
@@ -126,8 +125,8 @@ private:
                             }else{
                                 if(checkSum(data)){
                                     if((!((data>>9)&0b01)) && (!((data>>10)&0b011111))){ //Check for time message
+                                        hwlib::cout<<"Time: "<<((data>>5) & 0b1111)<<"\n";
                                         registerControl.gameTime((data>>5) & 0b1111);
-                                        //hwlib::cout<<"Time: "<<((data>>5) & 0b1111)<<"\n";
                                         previousData=data;
                                         subState = WAITINGFORCOUNTDOWN;
                                     }else{
@@ -157,6 +156,7 @@ private:
                             }
                             break;
                     }
+                    break;
             }
         }
     }
