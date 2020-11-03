@@ -44,7 +44,7 @@ public:
 
             for (auto y = 0; y < size.y / 8; y++) {
                 transaction.write(buffer + size.x * y, size.x);
-                hwlib::wait_us(0);
+                hwlib::wait_us(1);
             }
         } else {
             for (auto y = 0; y < size.y / 8; y++) {

@@ -54,7 +54,7 @@ private:
                     previousData = data;
                     data = dataInChannel.read();
                     //hwlib::wait_ms(1000); //Uncomment this in if testing with cout, gives ReceiveControl enough time to receive messages sent right after eachother, lengthen if need be.
-                    //hwlib::cout<<"INACTIVE: "<<hwlib::bin<<data<<hwlib::dec<<"\n";
+                    hwlib::cout<<"INACTIVE: "<<hwlib::bin<<data<<hwlib::dec<<"\n";
                     state = DECODING;
                     break;
                 case DECODING:
