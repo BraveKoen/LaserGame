@@ -10,7 +10,10 @@
 
 #include "../boundary/keypad.hpp"
 #include "../boundary/display.hpp"
-
+/// \brief
+/// Class InitControl.
+/// \details
+/// This class is for game setting: Countdown and how long the game lasts
 class InitControl:
     public rtos::task<>,
     public ButtonListener
@@ -28,6 +31,11 @@ private:
     // rtos::flag gameOverFlag;
     rtos::clock countdownClock; // update name in CCD accordingly
 public:
+/// \brief
+/// Constructor ReceiveControl.
+/// \details
+/// the Constructor expects GameInfo, SendControl, TransferControl, GameTimeControl, Keypad and Display all by reference.
+/// ButtonChannel and CountDownClock are created, the keypad is add to ButtonListener. 
     InitControl(
         GameInfo& gameInfo,
         SendControl& sendControl,
@@ -48,7 +56,10 @@ public:
     {
         keypad.addButtonListener(this);
     }
-
+/// \brief
+/// buttonPressed function void, expects a int
+/// \details
+/// buttonPressed needs a buttunID. When the function is called it will write the buttonID to the buttonChannel.
     void buttonPressed(int buttonID) override {
         buttonChannel.write(buttonID);
     }
