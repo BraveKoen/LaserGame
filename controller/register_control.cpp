@@ -37,7 +37,7 @@ void RegisterControl::startMenu() {
 
 void RegisterControl::main(){
     uint8_t button = 0;
-    uint8_t playerID = 0;
+    uint8_t playerID = gameInfo.getPlayerID();
     uint8_t weaponType = 0;
     for(;;){
         switch(state){
@@ -59,6 +59,7 @@ void RegisterControl::main(){
                 auto event = wait(gameTimeFlag + buttonChannel);
                 if(event == gameTimeFlag){
                     gameInfo.setTime(gameTimePool.read());
+                    state = INACTIVE;
                 }else if(event == buttonChannel){
                     button = buttonChannel.read();
                     state = CONFIGURING;
