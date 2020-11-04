@@ -28,8 +28,8 @@ void GameTimeControl::start(unsigned int countdown = 1){
 }
 
 void GameTimeControl::main(){
-    unsigned int countdown;
-    unsigned int gameTime;
+    int countdown;
+    int gameTime;
 
     for(;;){
         switch(state){
@@ -37,6 +37,7 @@ void GameTimeControl::main(){
                 wait(countDownFlag);
                 countdown = countDownPool.read();
                 gameTime = gameInfo.getTime() * 60;
+                display.clear();
                 state = COUNTDOWN;  
                 break;
             case COUNTDOWN:
@@ -48,9 +49,9 @@ void GameTimeControl::main(){
                     break;
                 }else{
                     if(countdown<10){
-                        display.displayMessage("\f\vStart:\t00010", countdown);
+                        display.displayMessage("\vStart:\t00010", countdown);
                     }else{
-                        display.displayMessage("\f\vStart:\t0001", countdown); 
+                        display.displayMessage("\vStart:\t0001", countdown); 
                     }
                     countdown--;
                     hwlib::wait_ms(1000);
