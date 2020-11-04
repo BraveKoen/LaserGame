@@ -15,6 +15,7 @@ Er is een max van 31 spelers.👩‍👩‍👧
 * 🔫 B voor het invoeren van het wapen, er is keuzen van 1 tot 8. 💥
 * 🎮 C Start een nieuwe game. Dit kan alleen op het moment dat je playerID 0 is.
 
+With # you can confirm the settings.
 ## Installation
 
  Het correct aansluiten gaat als volgt:<br>
