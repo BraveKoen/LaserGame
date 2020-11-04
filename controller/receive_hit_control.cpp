@@ -54,9 +54,9 @@ void ReceiveHitControl::main(){
                     shotControl.gameOver();
                     initControl.gameOver();
                     display.displayMessage("\t0002Lives:\t00030",0);
-                    buzzer.playSound(1);
+                    //buzzer.playSound(1);
                     hwlib::wait_ms((hit[1]/20)*1000);
-                    buzzer.playSound(0);
+                    //buzzer.playSound(0);
                     gameInfo.registerHit(hit[0], lives);
                     state = INACTIVE;
                     break;
@@ -70,9 +70,9 @@ void ReceiveHitControl::main(){
                     }else{
                         display.displayMessage("\t0002Lives:\t0003", lives);
                     }
-                    buzzer.playSound(1);
+                    //buzzer.playSound(1);
                     hwlib::wait_ms((hit[1]/20)*1000);
-                    buzzer.playSound(0);
+                    //buzzer.playSound(0);
                     break;
                 }
         }

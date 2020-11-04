@@ -48,9 +48,9 @@ void GameTimeControl::main(){
                     break;
                 }else{
                     if(countdown<10){
-                        display.displayMessage("\vStart:\t00010", countdown);
+                        display.displayMessage("\f\vStart:\t00010", countdown);
                     }else{
-                        display.displayMessage("\vStart:\t0001", countdown); 
+                        display.displayMessage("\f\vStart:\t0001", countdown); 
                     }
                     countdown--;
                     hwlib::wait_ms(1000);
@@ -58,8 +58,8 @@ void GameTimeControl::main(){
                 }
             case GAMETIME:
                 if(gameTime > 1){
-                    hwlib::wait_ms(1000);
-                    gameTime--;
+                    hwlib::wait_ms(10000);
+                    gameTime-=10;
                     if(gameTime/60<10){
                         display.displayMessage("\vTimer:\t00010", gameTime/60);
                     }else{

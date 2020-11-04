@@ -30,7 +30,6 @@ private:
     Keypad& keypad;
 
     rtos::channel<uint8_t, 10> buttonChannel;
-    rtos::pool<int> gameTimePool;
     rtos::flag gameTimeFlag;
     rtos::flag startMenuFlag;
 public:
