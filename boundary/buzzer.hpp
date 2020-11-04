@@ -9,7 +9,6 @@ class Buzzer{
 private:
     hwlib::target::pin_out buzzerPin;
 
-    state_t state = INACTIVE;
 public:
     Buzzer(hwlib::target::pins pin):
         buzzerPin(hwlib::target::pin_out(pin))
@@ -35,8 +34,11 @@ void await( long long unsigned int t ){
         }   
     }
 
-    void peew(){
-        beep(20'000, 200'000, 990 );
+    void hitSound(){
+        for( int i = 1; i < 4; i++ ){
+            beep( 200/i, 75'000 );
+            hwlib::wait_us( 20'000 );
+        }
     }
 };
 
