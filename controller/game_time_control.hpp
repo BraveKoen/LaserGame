@@ -1,92 +1,67 @@
 #ifndef GAME_TIME_CONTROL_HPP
 #define GAME_TIME_CONTROL_HPP
 
-#include "../entity/game_info.hpp"
-//#include "init_control.hpp"
 #include "hwlib.hpp"
 #include "rtos.hpp"
+#include "../entity/game_info.hpp"
+#include "init_control.hpp"
+#include "register_control.hpp"
 #include "shot_control.hpp"
 #include "receive_hit_control.hpp"
+#include "../boundary/display.hpp"
 
+class InitControl;
+class ReceiveHitControl;
+
+/// \brief
+/// class GameTimeControl controls the gametime.
+/// \details
+/// class will display countdown and gametime and will count down both
 class GameTimeControl : public rtos::task<>{
     enum state_t { INACTIVE, COUNTDOWN, GAMETIME };
-
 private:
     state_t state = INACTIVE;
 
-    rtos::pool<int> countDownPool;
-    rtos::flag countDownFlag;
-
     GameInfo& gameInfo;
-    // InitControl& initControl;
+    InitControl& initControl;
+    RegisterControl& registerControl;
     ShotControl& shotControl;
     ReceiveHitControl& receiveHitControl;
     Display& display;
 
+    rtos::pool<int> countDownPool;
+    rtos::flag countDownFlag;
+    rtos::flag gameOverFlag;
+    rtos::clock clock_10s;
 public:
     GameTimeControl(
         GameInfo& gameInfo,
-        // InitControl& initControl,
+        InitControl& initControl,
+        RegisterControl& registerControl,
         ShotControl& shotControl,
         ReceiveHitControl& receiveHitControl,
         Display& display
-    ):
-    task("GameTimeTask"),
-    countDownPool("countDownPool"),
-    countDownFlag(this, "countDownFlag"),
-    gameInfo(gameInfo),
-    // initControl(initControl),
-    shotControl(shotControl),
-    receiveHitControl(receiveHitControl),
-    display(display)
-    {}
+    );
 
-    void start(unsigned int countdown = 1){
-        countDownPool.write(countdown);
-        countDownFlag.set();
-    }
+    /// \brief
+    /// gameOver is to set the flag
+    /// \details
+    /// will set the flag gameOverFlag.
+    void gameOver();
 
-private:
-    void main(){
-        unsigned int countdown;
-        unsigned int gameTime;
-        unsigned int currentTime;
+    /// \brief
+    /// start is to start the countdown period
+    /// \details
+    /// will set put countdown in pool and set flag
+    void start(unsigned int countdown);
 
-        currentTime = hwlib::now_us();
-        countdown = countDownPool.read();
-        gameTime = gameInfo.getTime();
-        for(;;){
-            switch(state){
-                case INACTIVE: 
-                    wait(countDownFlag);
-                    state = COUNTDOWN;  
-                    break;
-                case COUNTDOWN:
-                    if(countdown <= 0){
-                        state = GAMETIME;
-                        break;
-                    }else{
-                        display.displayMessage("\t0000Start:\t0001", countdown); 
-                        countdown--;
-                        hwlib::wait_ms(1'000);
-                        break;
-                    }
-                case GAMETIME:
-                    display.displayMessage("\t0000GO!");
-                    if(gameTime > 1){
-                        hwlib::wait_ms(1'000);
-                        gameTime--;
-                        display.displayMessage("\t0000Time:\t0001", gameTime);
-                        break;
-                    }else{
-                        // initControl.gameOver();
-                        shotControl.gameOver();
-                        receiveHitControl.gameOver();
-                        state = INACTIVE;
-                        break;
-                    }
-            }
-        }
-    }
+    /// \brief
+    /// this main will switch between counting down gametime and cooldown or nothing
+    /// \details
+    /// inactive state waits for countdown pool, after wich state countdown will start counting down.
+    /// after the countdown the game time itself will be displayed.
+    /// when time is up, function will stop all other necessary classes.
+    void main() override;
 };
+
 #endif //GAME_TIME_CONTROL

@@ -3,8 +3,12 @@
 
 #include "hwlib.hpp"
 #include "rtos.hpp"
-// #include "glcd_oled_cooperative.hpp"
+#include "glcd_oled_cooperative.hpp"
 
+/// \brief
+/// Class Display
+/// \details
+/// .
 class Display: public rtos::task<> {
 private:
     hwlib::target::pin_oc scl;
@@ -14,7 +18,11 @@ public:
         Mode8x8,
         Mode16x16
     };
-
+/// \brief
+/// Constructor Display
+/// \details
+/// This constructor has sclPin and a sdaPin
+/// messagePool, messageFlag and clearFlag are created.
     Display(
         hwlib::target::pins sclPin,
         hwlib::target::pins sdaPin
@@ -24,51 +32,46 @@ public:
         sda(sdaPin),
         i2cBus(scl, sda),
         display(i2cBus),
+        font{
+            hwlib::font_default_8x8(),
+            hwlib::font_default_16x16()
+        },
         terminal{
-            .mode8x8{display, hwlib::font_default_8x8()},
-            .mode16x16{display, hwlib::font_default_16x16()}
+            .mode8x8{display, font.mode8x8},
+            .mode16x16{display, font.mode16x16}
         },
         messagePool("message pool"),
         messageFlag(this, "message flag"),
         clearFlag(this, "clear flag")
     {}
 
-    // note: these function overloads require flag -std=c++2a
+/// \brief
+/// Function displayMessage needs a char message and a font
+/// \details
+/// This constructor has gameInfo, shotControl and Display by reference.
+/// The constructor will also make buzzer with pin d9.
+/// hitReceivedChannel, gameOverFlag and startFlag are created.
     void displayMessage(
         char const *message,
         Font font = Font::Mode16x16
     ) {
-        // string literals have static storage duration so
-        // writing the address of it to a pool seems fine
-        messagePool.write({
-            .tag{MessageType::Tag::String},
-            .type{.string{message}},
-            .font{font}
-        });
+        messagePool.write({message, font});
         messageFlag.set();
     }
 
     void displayMessage(
-        char value,
+        char letter,
         Font font = Font::Mode16x16
     ) {
-        messagePool.write({
-            .tag{MessageType::Tag::Letter},
-            .type{.letter{value}},
-            .font{font}
-        });
+        messagePool.write({letter, font});
         messageFlag.set();
     }
 
     void displayMessage(
-        int value,
+        int number,
         Font font = Font::Mode16x16
     ) {
-        messagePool.write({
-            .tag{MessageType::Tag::Number},
-            .type{.number{value}},
-            .font{font}
-        });
+        messagePool.write({number, font});
         messageFlag.set();
     }
 
@@ -77,11 +80,7 @@ public:
         int value,
         Font font = Font::Mode16x16
     ) {
-        messagePool.write({
-            .tag{MessageType::Tag::Pair},
-            .type{.pair{.string{message}, .number{value}}},
-            .font{font}
-        });
+        messagePool.write({message, value, font});
         messageFlag.set();
     }
 
@@ -103,20 +102,30 @@ private:
         Inactive,
         Clearing
     };
-    hwlib::i2c_bus_bit_banged_scl_sda i2cBus;
-    std::conditional_t<
-        false,
-        // glcd_oled_cooperative,
-        int,
-        hwlib::glcd_oled
-    > display;
-    struct {
-        hwlib::terminal_from mode8x8;
-        hwlib::terminal_from mode16x16;
-    } terminal;
-    // this type of construction ultimately saves
-    // some additional pools and an extra flush
+
     struct MessageType {
+        MessageType(char const *string, Font font):
+            tag{Tag::String},
+            type{.string{string}},
+            font{font}
+        {}
+        MessageType(char letter, Font font):
+            tag{Tag::Letter},
+            type{.letter{letter}},
+            font{font}
+        {}
+        MessageType(int number, Font font):
+            tag{Tag::Number},
+            type{.number{number}},
+            font{font}
+        {}
+        MessageType(char const *string, int number, Font font):
+            tag{Tag::Pair},
+            type{.pair{string, number}},
+            font{font}
+        {}
+        MessageType() = default;
+
         enum class Tag: uint8_t {
             String,
             Letter,
@@ -134,6 +143,21 @@ private:
         } type;
         Font font;
     };
+
+    hwlib::i2c_bus_bit_banged_scl_sda i2cBus;
+    std::conditional_t<
+        true,
+        glcd_oled_cooperative,
+        hwlib::glcd_oled
+    > display;
+    struct {
+        hwlib::font_default_8x8 mode8x8;
+        hwlib::font_default_16x16 mode16x16;
+    } font;
+    struct {
+        hwlib::terminal_from mode8x8;
+        hwlib::terminal_from mode16x16;
+    } terminal;
     State state;
 
     rtos::pool<MessageType> messagePool;
@@ -157,7 +181,7 @@ private:
     }
 
     void writeMessage() {
-        auto const message = messagePool.read();
+        auto const& message = messagePool.read();
         auto& output{
             message.font == Font::Mode16x16
                 ? terminal.mode16x16

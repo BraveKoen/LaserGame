@@ -21,9 +21,6 @@ extern unsigned int __stack_end;
 int main() {
     hwlib::wait_ms(1'000);
 
-    auto gameInfo = GameInfo();
-    auto sendControl = SendControl();
-    auto transferControl = TransferControl(gameInfo);
     namespace target = hwlib::target;
     auto out0 = target::pin_oc(target::pins::a0);
     auto out1 = target::pin_oc(target::pins::a1);
@@ -36,46 +33,48 @@ int main() {
     auto outPort = hwlib::port_oc_from(out0, out1, out2, out3);
     auto inPort  = hwlib::port_in_from(in0, in1, in2, in3);
     auto keypad = Keypad(outPort, inPort);
-    auto shotControl = ShotControl(sendControl, gameInfo, keypad);
     auto display = Display(
         target::pins::scl,
         target::pins::sda
     );
-    auto receiveHitControl = ReceiveHitControl(
-        gameInfo,
-        shotControl,
-        display
-    );
-    auto gameTimeControl = GameTimeControl(
-        gameInfo,
-        shotControl,
-        receiveHitControl,
-        display
-    );
+    auto gameInfo = GameInfo();
+    auto sendControl = SendControl();
+    auto transferControl = TransferControl(gameInfo);
+    auto shotControl = ShotControl(sendControl, gameInfo, keypad);
     auto initControl = InitControl(
         gameInfo,
         sendControl,
         transferControl,
-        gameTimeControl,
         keypad,
         display
     );
     auto registerControl = RegisterControl(
         gameInfo,
+        initControl,
         display,
         keypad
     );
-   //  (void)initControl;
-   //  (void)registerControl;
+    auto receiveHitControl = ReceiveHitControl(
+        gameInfo,
+        initControl,
+        registerControl,
+        shotControl,
+        display
+    );
+    auto gameTimeControl = GameTimeControl(
+        gameInfo,
+        initControl,
+        registerControl,
+        shotControl,
+        receiveHitControl,
+        display
+    );
+    auto receiveControl = ReceiveControl(
+        receiveHitControl,
+        gameTimeControl,
+        registerControl,
+        transferControl,
+        gameInfo
+    );
     rtos::run();
-
-    //
-    //  auto sendTest = SendControl();
-    //  sendTest.sendMessage(0b0'11111);
-    //  sendTest.sendMessage(0b0);
-    //  sendTest.sendMessage(0b0'01010);
-    //  sendTest.sendMessage(0b0'00001);
-
-    //  auto receive_control = ReceiveControl();
-    //  rtos::run();
 }

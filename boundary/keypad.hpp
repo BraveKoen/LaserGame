@@ -26,8 +26,8 @@ public:
         };
         for (State state = State::WaitOnKeyPress;;) {
             switch (state) {
-            case State::WaitOnKeyPress: updateOnPressed(); break;
-            default: break;
+                case State::WaitOnKeyPress: updateOnPressed(); break;
+                default: break;
             }
         }
     }

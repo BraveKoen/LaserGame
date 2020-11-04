@@ -6,6 +6,10 @@
 #include "../boundary/ir_receiver.hpp"
 #include "decoder.hpp"
 
+/// \brief
+/// Class ReceiveControl.
+/// \details
+/// This class is for timings
 class ReceiveControl : public rtos::task<>{
     enum states {WAITING, RECEIVINGMESSAGE};
 
@@ -19,24 +23,37 @@ private:
     Decoder decoder;
 
 public:
-    ReceiveControl(ReceiveHitControl & receiveHitControl, GameTimeControl & gameTimeControl, RegisterControl & registerControl, TransferControl & transferControl):
+    /// \brief
+    /// Constructor ReceiveControl
+    /// \details
+    /// This constructor has receiveHitControl, gameTimeControl, registerControl and transferControl by reference.
+    /// IrReceiver is created with pin d8.
+    /// clock_200us, timer_4ms are created.
+    ReceiveControl(ReceiveHitControl & receiveHitControl, GameTimeControl & gameTimeControl, RegisterControl & registerControl, TransferControl & transferControl, GameInfo & gameInfo):
     task("ReceiveTask"),
     clock_200us(this, 200, "200 us clock"), 
     timer_4ms(this, "4 ms timer"),
     irReceiver(hwlib::target::pins::d8),
-    decoder(receiveHitControl, gameTimeControl, registerControl, transferControl)
+    decoder(receiveHitControl, gameTimeControl, registerControl, transferControl, gameInfo)
     {}
 
 private:
+    /// \brief
+    /// main ReceiveControl
+    /// \details
+    /// states are WAITING and RECEIVINGMESSAGE
+    /// case WATING
+    ///     Waits for 200 us then reads IrReceiver.
+    ///     if there is a signal it will change the state to RECEIVING and signalhigh = 1.
+    /// case RECEIVINGMESSAGE
+    ///     Will check every 200us for a new signal
     void main(){
         bool signal=0;
         uint_fast8_t messageSize=0;
         uint_fast16_t message=0;
         uint_fast8_t signalHigh=0;
-
         for(;;){
-            switch(state)
-            {
+            switch(state){
                 case WAITING:
                     wait(clock_200us);
                     signal = irReceiver.read();

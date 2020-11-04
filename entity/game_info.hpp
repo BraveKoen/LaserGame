@@ -20,7 +20,10 @@ public:
         gameTimePool("gameTimePool"),
         weaponTypePool("weaponTypePool"),
         hitsPool("hitsPool")
-    {}
+    {
+        playerIDPool.write(1);
+        weaponTypePool.write(0);
+    }
 
     void setWeapon(int type) { weaponTypePool.write(type); }
     
@@ -33,6 +36,8 @@ public:
     void setTime(int time) { gameTimePool.write(time); }
     
     int getTime() { return gameTimePool.read(); }
+
+    int getHitCount() { return count; }
 
     void registerHit(uint8_t playerID,uint8_t damage){
         std::array<std::array<uint8_t, 2>,100> tempHits= hitsPool.read();
