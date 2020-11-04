@@ -111,6 +111,7 @@ private:
                     break;
                 case ACTIVE:
                     auto event = wait(buttonFlag + gameOverFlag);
+                    hwlib::wait_ms(3);
                     if(event == buttonFlag){
                         wait(timerWeaponCooldown);
                         button = buttonPool.read();
