@@ -56,11 +56,8 @@ void ReceiveHitControl::main(){
                 if(event == hitReceivedChannel){
                     hit = hitReceivedChannel.read();
                     if((lives - hit[1]) <= 0){
-                        // gameOverFlag.set(); // uhm... what??
                         display.displayMessage("\t0002Lives:\t00030",0);
-                        //buzzer.playSound(1);
-                        hwlib::wait_ms((hit[1]/20)*1000);
-                        //buzzer.playSound(0);
+                        buzzer.hitSound();
                         gameInfo.registerHit(hit[0], lives);
                         gameTimeControl->gameOver();
                         shotControl.gameOver();
