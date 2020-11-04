@@ -80,8 +80,12 @@ private:
                             buzzerPin.write(false);
                         }
                     }else if(event == playSoundFlag){
-                        state = INACTIVE;
-                        buzzerPin.write(false);
+                        poolState = playSoundPool.read();
+                        if(!poolState){
+                            buzzerPin.write(false);
+                            state = INACTIVE;
+                        }
+                        break
                     }
                     break;
             }

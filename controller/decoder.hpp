@@ -95,7 +95,7 @@ private:
                     switch(subState){
                         case DEFAULT:
                             if(data==previousData){ //All data is sent twice, to increase succes rate. We dont want to do everything twice so we make sure to check first. 
-                                previousData=0xffff;//The message can/should never be 0xffff so we can use that to make sure this is never true more than twice in a row.
+                                data=0xffff;//The message can/should never be 0xffff so we can use that to make sure this is never true more than twice in a row.
                                // hwlib::cout<<"DOUBLE: "<<hwlib::bin<<data<<hwlib::dec<<"\n";
                                //If someone is shot by the same player twice things should still mostly work even if one of the two messages is lost somewhere, it will simply continue on the second of the two.
                             }else{
@@ -109,8 +109,8 @@ private:
                                         transferControl.transferCommand();
                                         //hwlib::cout<<"Transfercomman\n";
                                     }else if(((data>>8) & 0b11)==0b11){ //Check for shot command.
-                                        receiveHitControl.hitReceived(((data>>10) & 0b11111), damageForType[(data>>5) & 0b111]);
                                         //hwlib::cout<<"Hitreceived, PlayerID: "<<((data>>10) & 0b11111)<<" Damage: "<<damageForType[((data>>5) & 0b111)]<<"\n";
+                                        receiveHitControl.hitReceived(((data>>10) & 0b11111), damageForType[(data>>5) & 0b111]);
                                     } //More commands can be added here, would be in format 0b0'ppppp'10ccc'xxxxx. Where p is player number, c is command(number) and x is the XOR of ppppp and 10ccc
                                 }
                             }
@@ -120,7 +120,7 @@ private:
                             data = dataInChannel.read();
                             //hwlib::cout<<hwlib::bin<<data<<hwlib::dec;
                             if(data==previousData){ 
-                                previousData=0xffff;
+                                data=0xffff;
                                 //hwlib::cout<<"DOUBLE: "<<hwlib::bin<<data<<hwlib::dec<<"\n";
                             }else{
                                 if(checkSum(data)){
@@ -139,7 +139,7 @@ private:
                             data = dataInChannel.read();
                             //hwlib::cout<<hwlib::bin<<data<<"\n";
                             if(data==previousData){ 
-                                previousData=0xffff;
+                                data=0xffff;
                                // hwlib::cout<<"DOUBLE: "<<hwlib::bin<<data<<hwlib::dec<<"\n";
                             }else{
                                 if(checkSum(data)){

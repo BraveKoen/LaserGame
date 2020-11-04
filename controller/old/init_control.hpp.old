@@ -4,20 +4,23 @@
 #include "hwlib.hpp"
 #include "rtos.hpp"
 #include "../entity/game_info.hpp"
+#include "receive_hit_control.hpp"
 #include "game_time_control.hpp"
 #include "register_control.hpp"
+#include "game_time_control.hpp"
 #include "transfer_control.hpp"
 #include "send_control.hpp"
 #include "../boundary/keypad.hpp"
 #include "../boundary/display.hpp"
-
-class GameTimeControl;
-class RegisterControl;
-
 /// \brief
 /// Class InitControl.
 /// \details
 /// This class is for game setting: Countdown and how long the game lasts
+
+class ReceiveHitControl;
+class GameTimeControl;
+class RegisterControl;
+
 class InitControl:
     public rtos::task<>,
     public ButtonListener
@@ -26,8 +29,10 @@ private:
     GameInfo& gameInfo;
     SendControl& sendControl;
     TransferControl& transferControl;
+    GameTimeControl& gameTimeControl;
     Keypad& keypad;
     Display& display;
+    ReceiveHitControl *receiveHitControl;
     GameTimeControl *gameTimeControl;
     RegisterControl *registerControl;
 
@@ -37,44 +42,67 @@ private:
     rtos::flag startMenuFlag;
     rtos::flag gameOverFlag;
 public:
-    /// \brief
-    /// Constructor ReceiveControl.
-    /// \details
-    /// the Constructor expects GameInfo, SendControl, TransferControl, GameTimeControl, Keypad and Display all by reference.
-    /// ButtonChannel and CountDownClock are created, the keypad is add to ButtonListener. 
+/// \brief
+/// Constructor ReceiveControl.
+/// \details
+/// the Constructor expects GameInfo, SendControl, TransferControl, GameTimeControl, Keypad and Display all by reference.
+/// ButtonChannel and CountDownClock are created, the keypad is add to ButtonListener. 
     InitControl(
         GameInfo& gameInfo,
         SendControl& sendControl,
         TransferControl& transferControl,
         Keypad& keypad,
         Display& display
-    );
+    ):
+        task("init_control task"),
+        gameInfo{gameInfo},
+        sendControl{sendControl},
+        transferControl{transferControl},
+        keypad{keypad},
+        display{display},
+        buttonChannel(this, "button channel"),
+        countdownClock(this, 1'000'000, "countdown clock"),
+        startMenuFlag(this, "start menu flag (InitControl)"),
+        gameOverFlag(this, "game over flag (InitControl)")
+    {
+        keypad.addButtonListener(this);
+        gameTimeControl.setInitControl(this);
+    }
 
     // scuffed workaround for missing a main controller GameControl
-    void setGameTimeControl(GameTimeControl *timeControl);
+    void setReceiveHitControl(ReceiveHitControl *hitControl) {
+        receiveHitControl = hitControl;
+    }
 
     // scuffed workaround for missing a main controller GameControl
-    void setRegisterControl(RegisterControl *regControl);
+    void setGameTimeControl(GameTimeControl *timeControl) {
+        gameTimeControl = timeControl;
+    }
+
+    // scuffed workaround for missing a main controller GameControl
+    void setRegisterControl(RegisterControl *regControl) {
+        registerControl = regControl;
+    }
 
     /// \brief
     /// gameOver is to set the flag
     /// \details
     /// will set the flag gameOverFlag.
-    void gameOver();
+    void gameOver(){
+        gameOverFlag.set();
+    }
 
-    void startMenu();
+    void startMenu() {
+        startMenuFlag.set();
+    }
 
-    void startRegisterMenu();
-
-    void startGameTime(unsigned countdown);
-
-    /// \brief
-    /// buttonPressed function void, expects a int
-    /// \details
-    /// buttonPressed needs a buttunID. When the function is called it will write the buttonID to the buttonChannel.
-    void buttonPressed(int buttonID) override;
-
-    void main() override;
+/// \brief
+/// buttonPressed function void, expects a int
+/// \details
+/// buttonPressed needs a buttunID. When the function is called it will write the buttonID to the buttonChannel.
+    void buttonPressed(int buttonID) override {
+        buttonChannel.write(buttonID);
+    }
 private:
     enum class MainState {
         Inactive,
@@ -103,7 +131,6 @@ private:
 
     void inactive() {
         wait(startMenuFlag);
-        buttonChannel.clear();
         mainState = MainState::ProcessInput;
         subState = SubState::RequestInput;
         initGameTimeInput();
@@ -127,7 +154,7 @@ private:
     }
 
     void validateInput(char input) {
-        if (input == '#' or inputSize >= 3) {
+        if (input == '#' or inputSize > 4) {
             if (time >= minTime and time <= maxTime) {
                 if (confGameTime) {
                     gameInfo.setTime(time);
@@ -137,14 +164,13 @@ private:
                 } else {
                     countdown = time;
                     countdownActive = false;
-                    display.clear();
                     initDistributeSettings();
                     mainState = MainState::DistributeSettings;
                 }
                 // subState = SubState::RequestInput;
             } else {
                 display.displayMessage(
-                    "\t0003Input invalid!",
+                    "\f\vInput\ninvalid!",
                     Display::Font::Mode8x8);
                 hwlib::wait_ms(1'000);
                 buttonChannel.clear();
@@ -176,11 +202,9 @@ private:
                 sendControl.sendMessage(countdown << 5);
                 countdownActive = true;
                 display.displayMessage(
-                    "\t0005Settings sent!  "
-                    "\n                ",
+                    "\f\vSettings\nsent!",
                     Display::Font::Mode8x8
                 );
-                startGameTime(countdown);
                 hwlib::wait_ms(1'000);
                 buttonChannel.clear();
                 initDistributeSettings();
@@ -195,6 +219,7 @@ private:
     }
 
     void gameInProgress() {
+        gameTimeControl->start(0);
         wait(gameOverFlag);
         buttonChannel.clear();
         initCommandSelection();
@@ -204,10 +229,7 @@ private:
     void commandSelection() {
         auto const buttonID = buttonChannel.read();
 
-        if (buttonID == 'A') {
-            startRegisterMenu();
-            mainState = MainState::Inactive;
-        } else if (buttonID == 'C') {
+        if (buttonID == 'C') {
             initGameTimeInput();
             mainState = MainState::ProcessInput;
             // subState = SubState::RequestInput;
@@ -229,14 +251,14 @@ private:
     }
 
     void initGameTimeInput() {
-        message = "\f\vEnter game\ntime (1-15): ";
+        message = "\f\vEnter game\ntime (1-15):\n";
         minTime = 1;
         maxTime = 15;
         confGameTime = true;
     }
 
     void initCountdownInput() {
-        message = "\f\vEnter count-\ndown (5-30): ";
+        message = "\f\vEnter count-\ndown (5-30):\n";
         minTime = 5;
         maxTime = 30;
         confGameTime = false;
@@ -244,18 +266,31 @@ private:
 
     void initDistributeSettings() {
          display.displayMessage(
-            "\t0005* - Send game   "
-            "\n    settings",
+            "\f\v* - Send\n    settings",
             Display::Font::Mode8x8);
     }
 
     void initCommandSelection() {
         display.displayMessage(
-            "\f\vA - Player\n    settings\n"
-            "C - Start\n    new game\n"
+            "\f\vC - Enter\n    settings\n"
             "D - Local\n    transfer\n"
             "* - Send\n    transfer",
             Display::Font::Mode8x8);
+    }
+public:
+    void main() override {
+        mainState = MainState::Inactive;
+
+        for (;;) {
+            switch (mainState) {
+            case MainState::Inactive           : inactive()           ; break;
+            case MainState::ProcessInput       : processInput()       ; break;
+            case MainState::DistributeSettings : distributeSettings() ; break;
+            case MainState::GameInProgress     : gameInProgress()     ; break;
+            case MainState::CommandSelection   : commandSelection()   ; break;
+            default: break;
+            }
+        }
     }
 };
 

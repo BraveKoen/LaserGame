@@ -60,18 +60,18 @@ public:
     }
 
     void displayMessage(
-        char value,
+        char letter,
         Font font = Font::Mode16x16
     ) {
-        messagePool.write({value, font});
+        messagePool.write({letter, font});
         messageFlag.set();
     }
 
     void displayMessage(
-        int value,
+        int number,
         Font font = Font::Mode16x16
     ) {
-        messagePool.write({value, font});
+        messagePool.write({number, font});
         messageFlag.set();
     }
 
