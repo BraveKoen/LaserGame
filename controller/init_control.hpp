@@ -93,6 +93,7 @@ private:
     bool confGameTime;
     bool countdownActive;
     buttonType buttonID;
+    bool firstCountdown;
 
     void inactive() {
         wait(startMenuFlag);
@@ -132,6 +133,7 @@ private:
                     countdownActive = false;
                     display.clear();
                     initDistributeSettings();
+                    firstCountdown=true;
                     mainState = MainState::DistributeSettings;
                 }
                 // subState = SubState::RequestInput;
@@ -173,7 +175,10 @@ private:
                     "\n                ",
                     Display::Font::Mode8x8
                 );
-                startGameTime(countdown);
+                if(firstCountdown){
+                    startGameTime(countdown);
+                    firstCountdown=false;
+                }
                 hwlib::wait_ms(1'000);
                 buttonChannel.clear();
                 initDistributeSettings();
