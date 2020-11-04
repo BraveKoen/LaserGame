@@ -13,7 +13,6 @@
 Het eerste wat je ziet als het systeem opstart is een menu.
 * :runner: A voor het invoeren van de playerID, als je host wil zijn moet je het systeem de ID laten resetten en daarna 0 invoeren.
 Er is een max van 31 spelers.👩‍👩‍👧
-<br>
 * 🔫 B voor het invoeren van het wapen, er is keuzen van 1 tot 8. 💥
 * 🎮 C Start een nieuwe game. Dit kan alleen op het moment dat je playerID 0 is.
 
