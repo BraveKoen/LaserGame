@@ -5,12 +5,14 @@
 ReceiveHitControl::ReceiveHitControl(
     GameInfo& gameInfo,
     InitControl& initControl,
+    RegisterControl& registerControl,
     ShotControl& shotControl,
     Display& display
 ):
     task("ReceiveHitControl"),
     gameInfo(gameInfo),
     initControl(initControl),
+    registerControl(registerControl),
     shotControl(shotControl),
     display(display),
     buzzer(hwlib::target::pins::d9),
@@ -18,6 +20,10 @@ ReceiveHitControl::ReceiveHitControl(
     gameOverFlag(this, "gameOverFlag"),
     startFlag(this, "startFlag")
 {} 
+
+void ReceiveHitControl::setGameTimeControl(GameTimeControl *timeControl) {
+    gameTimeControl = timeControl;
+}
 
 void ReceiveHitControl::hitReceived(uint8_t playerID, uint8_t damage){
     hitReceivedChannel.write({playerID, damage});
@@ -51,13 +57,18 @@ void ReceiveHitControl::main(){
                     break;
                 }else if((lives - hit[1]) <= 0){
                     // gameOverFlag.set(); // uhm... what??
-                    shotControl.gameOver();
-                    initControl.gameOver();
                     display.displayMessage("\t0002Lives:\t00030",0);
                     //buzzer.playSound(1);
                     hwlib::wait_ms((hit[1]/20)*1000);
                     //buzzer.playSound(0);
                     gameInfo.registerHit(hit[0], lives);
+                    gameTimeControl->gameOver();
+                    shotControl.gameOver();
+                    if (gameInfo.getPlayerID() == 0) {
+                        initControl.startMenu();
+                    } else {
+                        registerControl.startMenu();
+                    }
                     state = INACTIVE;
                     break;
                 }else{
