@@ -43,6 +43,7 @@ void RegisterControl::main(){
         switch(state){
             case INACTIVE:
                 wait(startMenuFlag);
+                substate = DEFAULT;
                 state = MENUSELECT;
                 break;
             case MENUSELECT: {

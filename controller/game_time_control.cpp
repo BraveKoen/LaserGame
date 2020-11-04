@@ -20,7 +20,7 @@ GameTimeControl::GameTimeControl(
     countDownPool("countDownPool"),
     countDownFlag(this, "countDownFlag"),
     gameOverFlag(this, "game over flag (GameTimeControl)"),
-    clock_10s(this, 10'000'000, "1s clock")
+    clock_10s(this, 10'000'000, "10s clock")
 {
     initControl.setGameTimeControl(this);
     receiveHitControl.setGameTimeControl(this);
