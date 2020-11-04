@@ -171,9 +171,9 @@ private:
             auto const buttonID = buttonChannel.read();
 
             if (buttonID == '*') {
-                sendControl.sendMessage(gameTime << 5);
                 sendControl.sendMessage(0b0);
-                sendControl.sendMessage(countdown << 5);
+                sendControl.sendMessage(gameTime);
+                sendControl.sendMessage(countdown);
                 countdownActive = true;
                 display.displayMessage(
                     "\t0005Settings sent!  "
