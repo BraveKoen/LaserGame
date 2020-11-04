@@ -52,36 +52,43 @@ void ReceiveHitControl::main(){
                 state = ACTIVE;
                 break;
             case ACTIVE:
-                hit = hitReceivedChannel.read();
-                if((lives - hit[1]) <= 0){
-                    // gameOverFlag.set(); // uhm... what??
-                    display.displayMessage("\t0002Lives:\t00030",0);
-                    //buzzer.playSound(1);
-                    hwlib::wait_ms((hit[1]/20)*1000);
-                    //buzzer.playSound(0);
-                    gameInfo.registerHit(hit[0], lives);
-                    gameTimeControl->gameOver();
-                    shotControl.gameOver();
-                    if (gameInfo.getPlayerID() == 0) {
-                        initControl.startMenu();
-                    } else {
-                        registerControl.startMenu();
+                auto event = wait(hitReceivedChannel + gameOverFlag);
+                if(event == hitReceivedChannel){
+                    hit = hitReceivedChannel.read();
+                    if((lives - hit[1]) <= 0){
+                        // gameOverFlag.set(); // uhm... what??
+                        display.displayMessage("\t0002Lives:\t00030",0);
+                        //buzzer.playSound(1);
+                        hwlib::wait_ms((hit[1]/20)*1000);
+                        //buzzer.playSound(0);
+                        gameInfo.registerHit(hit[0], lives);
+                        gameTimeControl->gameOver();
+                        shotControl.gameOver();
+                        if (gameInfo.getPlayerID() == 0) {
+                            initControl.startMenu();
+                        } else {
+                            registerControl.startMenu();
+                        }
+                        state = INACTIVE;
+                        break;
+                    }else{
+                        lives -= hit[1];
+                        gameInfo.registerHit(hit[0], hit[1]);
+                        if(lives<10){
+                            display.displayMessage("\t0002Lives:\t000300", lives);
+                        }else if(lives<100){
+                            display.displayMessage("\t0002Lives:\t00030", lives);
+                        }else{
+                            display.displayMessage("\t0002Lives:\t0003", lives);
+                        }
+                        buzzer.hitSound();
+                        break;
                     }
+                }else if(state == gameOverFlag){
                     state = INACTIVE;
                     break;
-                }else{
-                    lives -= hit[1];
-                    gameInfo.registerHit(hit[0], hit[1]);
-                    if(lives<10){
-                        display.displayMessage("\t0002Lives:\t000300", lives);
-                    }else if(lives<100){
-                        display.displayMessage("\t0002Lives:\t00030", lives);
-                    }else{
-                        display.displayMessage("\t0002Lives:\t0003", lives);
-                    }
-                    buzzer.hitSound();
-                    break;
                 }
+            break;
         }
     }
 }
