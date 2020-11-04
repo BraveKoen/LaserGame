@@ -13,6 +13,10 @@
 class InitControl;
 class ReceiveHitControl;
 
+/// \brief
+/// class GameTimeControl controls the gametime.
+/// \details
+/// class will display countdown and gametime and will count down both
 class GameTimeControl : public rtos::task<>{
     enum state_t { INACTIVE, COUNTDOWN, GAMETIME };
 private:
@@ -45,8 +49,18 @@ public:
     /// will set the flag gameOverFlag.
     void gameOver();
 
+    /// \brief
+    /// start is to start the countdown period
+    /// \details
+    /// will set put countdown in pool and set flag
     void start(unsigned int countdown);
 
+    /// \brief
+    /// this main will switch between counting down gametime and cooldown or nothing
+    /// \details
+    /// inactive state waits for countdown pool, after wich state countdown will start counting down.
+    /// after the countdown the game time itself will be displayed.
+    /// when time is up, function will stop all other necessary classes.
     void main() override;
 };
 
