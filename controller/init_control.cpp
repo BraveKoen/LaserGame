@@ -17,8 +17,7 @@ InitControl::InitControl(
     display{display},
     buttonChannel(this, "button channel"),
     countdownClock(this, 1'000'000, "countdown clock"),
-    startMenuFlag(this, "start menu flag (InitControl)"),
-    gameOverFlag(this, "game over flag (InitControl)")
+    startMenuFlag(this, "start menu flag (InitControl)")
 {
     keypad.addButtonListener(this);
 }
@@ -29,10 +28,6 @@ void InitControl::setGameTimeControl(GameTimeControl *timeControl) {
 
 void InitControl::setRegisterControl(RegisterControl *regControl) {
     registerControl = regControl;
-}
-
-void InitControl::gameOver(){
-    gameOverFlag.set();
 }
 
 void InitControl::startMenu() {

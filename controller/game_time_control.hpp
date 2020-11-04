@@ -5,6 +5,7 @@
 #include "rtos.hpp"
 #include "../entity/game_info.hpp"
 #include "init_control.hpp"
+#include "register_control.hpp"
 #include "shot_control.hpp"
 #include "receive_hit_control.hpp"
 #include "../boundary/display.hpp"
@@ -19,21 +20,30 @@ private:
 
     GameInfo& gameInfo;
     InitControl& initControl;
+    RegisterControl& registerControl;
     ShotControl& shotControl;
     ReceiveHitControl& receiveHitControl;
     Display& display;
 
     rtos::pool<int> countDownPool;
     rtos::flag countDownFlag;
-    rtos::clock clock_1s;
+    rtos::flag gameOverFlag;
+    rtos::clock clock_10s;
 public:
     GameTimeControl(
         GameInfo& gameInfo,
         InitControl& initControl,
+        RegisterControl& registerControl,
         ShotControl& shotControl,
         ReceiveHitControl& receiveHitControl,
         Display& display
     );
+
+    /// \brief
+    /// gameOver is to set the flag
+    /// \details
+    /// will set the flag gameOverFlag.
+    void gameOver();
 
     void start(unsigned int countdown);
 

@@ -5,6 +5,7 @@
 GameTimeControl::GameTimeControl(
     GameInfo& gameInfo,
     InitControl& initControl,
+    RegisterControl& registerControl,
     ShotControl& shotControl,
     ReceiveHitControl& receiveHitControl,
     Display& display
@@ -12,14 +13,21 @@ GameTimeControl::GameTimeControl(
     task("GameTimeTask"),
     gameInfo(gameInfo),
     initControl(initControl),
+    registerControl(registerControl),
     shotControl(shotControl),
     receiveHitControl(receiveHitControl),
     display(display),
     countDownPool("countDownPool"),
     countDownFlag(this, "countDownFlag"),
-    clock_1s(this, 1'000'000, "1s clock")
+    gameOverFlag(this, "game over flag (GameTimeControl)"),
+    clock_10s(this, 10'000'000, "1s clock")
 {
     initControl.setGameTimeControl(this);
+    receiveHitControl.setGameTimeControl(this);
+}
+
+void GameTimeControl::gameOver() {
+    gameOverFlag.set();
 }
 
 void GameTimeControl::start(unsigned int countdown = 1){
@@ -28,8 +36,8 @@ void GameTimeControl::start(unsigned int countdown = 1){
 }
 
 void GameTimeControl::main(){
-    unsigned int countdown;
-    unsigned int gameTime;
+    int countdown;
+    int gameTime;
 
     for(;;){
         switch(state){
@@ -37,6 +45,7 @@ void GameTimeControl::main(){
                 wait(countDownFlag);
                 countdown = countDownPool.read();
                 gameTime = gameInfo.getTime() * 60;
+                display.clear();
                 state = COUNTDOWN;  
                 break;
             case COUNTDOWN:
@@ -56,28 +65,39 @@ void GameTimeControl::main(){
                     hwlib::wait_ms(1000);
                     break;
                 }
-            case GAMETIME:
-                if(gameTime > 1){
-                    hwlib::wait_ms(1000);
-                    gameTime--;
-                    if(gameTime/60<10){
-                        display.displayMessage("\vTimer:\t00010", gameTime/60);
+            case GAMETIME: {
+                auto event = wait(clock_10s + gameOverFlag);
+                if(event == clock_10s){
+                    if(gameTime > 10){
+                        // hwlib::wait_ms(10000);
+                        gameTime-=10;
+                        if(gameTime/60<10){
+                            display.displayMessage("\vTimer:\t00010", gameTime/60);
+                        }else{
+                            display.displayMessage("\vTimer:\t0001", gameTime/60);
+                        }
+                        if(gameTime%60<10){
+                            display.displayMessage(":0", gameTime%60);
+                        }else{
+                            display.displayMessage(":", gameTime%60); 
+                        }
+                        break;
                     }else{
-                        display.displayMessage("\vTimer:\t0001", gameTime/60);
+                        if (gameInfo.getPlayerID() == 0) {
+                            initControl.startMenu();
+                        } else {
+                            registerControl.startMenu();
+                        }
+                        shotControl.gameOver();
+                        receiveHitControl.gameOver();
+                        state = INACTIVE;
+                        break;
                     }
-                    if(gameTime%60<10){
-                        display.displayMessage(":0", gameTime%60);
-                    }else{
-                        display.displayMessage(":", gameTime%60); 
-                    }
-                    break;
-                }else{
-                    initControl.gameOver();
-                    shotControl.gameOver();
-                    receiveHitControl.gameOver();
+                } else if(event == gameOverFlag){
                     state = INACTIVE;
                     break;
                 }
+            }
         }
     }
 }

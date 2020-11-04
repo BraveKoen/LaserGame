@@ -5,12 +5,16 @@
 #include "rtos.hpp"
 #include "../entity/game_info.hpp"
 #include "init_control.hpp"
+#include "register_control.hpp"
+#include "game_time_control.hpp"
 #include "shot_control.hpp"
 #include "../boundary/display.hpp"
 #include "../boundary/buzzer.hpp"
 #include <array>
 
 class InitControl;
+class RegisterControl;
+class GameTimeControl;
 
 /// \brief
 /// Class ReceiveHitControl keeps trach of lives and controls the Buzzer
@@ -23,9 +27,11 @@ enum state_t {INACTIVE, ACTIVE};
 private:
     GameInfo& gameInfo;
     InitControl& initControl;
+    RegisterControl& registerControl;
     ShotControl& shotControl;
     Display& display;
     Buzzer buzzer;
+    GameTimeControl *gameTimeControl;
 
     rtos::channel<std::array<uint8_t, 2>, 10> hitReceivedChannel;
     rtos::flag gameOverFlag;
@@ -42,9 +48,13 @@ public:
     ReceiveHitControl(
         GameInfo& gameInfo,
         InitControl& initControl,
+        RegisterControl& registerControl,
         ShotControl& shotControl,
         Display& display
     );
+
+    // scuffed workaround for missing a main controller GameControl
+    void setGameTimeControl(GameTimeControl *timeControl);
 
     /// \brief
     /// hitReceived uint8_t playerID, uint8_t damage: void

@@ -14,7 +14,6 @@ RegisterControl::RegisterControl(
     display(display),
     keypad(keypad),
     buttonChannel(this, "buttonChannel"),
-    gameTimePool("gameTimePool"),
     gameTimeFlag(this,"gameTimeFlag"),
     startMenuFlag(this, "start menu flag (RegisterControl)")
 {
@@ -24,6 +23,7 @@ RegisterControl::RegisterControl(
 
 void RegisterControl::gameTime(int time){
     gameInfo.setTime(time);
+    gameTimeFlag.set();
 }
 
 // change type of buttonID
@@ -58,7 +58,6 @@ void RegisterControl::main(){
                 );
                 auto event = wait(gameTimeFlag + buttonChannel);
                 if(event == gameTimeFlag){
-                    gameInfo.setTime(gameTimePool.read());
                     state = INACTIVE;
                 }else if(event == buttonChannel){
                     button = buttonChannel.read();

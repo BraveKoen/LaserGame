@@ -48,24 +48,26 @@ int main() {
         keypad,
         display
     );
+    auto registerControl = RegisterControl(
+        gameInfo,
+        initControl,
+        display,
+        keypad
+    );
     auto receiveHitControl = ReceiveHitControl(
         gameInfo,
         initControl,
+        registerControl,
         shotControl,
         display
     );
     auto gameTimeControl = GameTimeControl(
         gameInfo,
         initControl,
+        registerControl,
         shotControl,
         receiveHitControl,
         display
-    );
-    auto registerControl = RegisterControl(
-        gameInfo,
-        initControl,
-        display,
-        keypad
     );
     auto receiveControl = ReceiveControl(
         receiveHitControl,

@@ -35,7 +35,6 @@ private:
     rtos::channel<buttonType, 16> buttonChannel;
     rtos::clock countdownClock; // update name in CCD accordingly
     rtos::flag startMenuFlag;
-    rtos::flag gameOverFlag;
 public:
     /// \brief
     /// Constructor ReceiveControl.
@@ -55,12 +54,6 @@ public:
 
     // scuffed workaround for missing a main controller GameControl
     void setRegisterControl(RegisterControl *regControl);
-
-    /// \brief
-    /// gameOver is to set the flag
-    /// \details
-    /// will set the flag gameOverFlag.
-    void gameOver();
 
     void startMenu();
 
@@ -195,7 +188,7 @@ private:
     }
 
     void gameInProgress() {
-        wait(gameOverFlag);
+        wait(startMenuFlag);
         buttonChannel.clear();
         initCommandSelection();
         mainState = MainState::CommandSelection;
