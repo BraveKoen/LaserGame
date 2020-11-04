@@ -53,9 +53,7 @@ void ReceiveHitControl::main(){
                 break;
             case ACTIVE:
                 hit = hitReceivedChannel.read();
-                if(hit[0]==playerID){
-                    break;
-                }else if((lives - hit[1]) <= 0){
+                if((lives - hit[1]) <= 0){
                     // gameOverFlag.set(); // uhm... what??
                     display.displayMessage("\t0002Lives:\t00030",0);
                     //buzzer.playSound(1);

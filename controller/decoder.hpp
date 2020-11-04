@@ -7,6 +7,7 @@
 #include "game_time_control.hpp"
 #include "register_control.hpp"
 #include "transfer_control.hpp"
+#include "../entity/game_info.hpp"
 
 /// \brief
 /// Class Decoder
@@ -29,6 +30,7 @@ private:
     GameTimeControl & gameTimeControl;
     RegisterControl & registerControl;
     TransferControl & transferControl;
+    GameInfo & gameInfo;
 
 public:
 /// \brief
@@ -36,13 +38,14 @@ public:
 /// \details
 /// This constructor has ReceiveHitControl, GameTimeControl, RegisterControl and TransferControl by reference.
 /// dataChannel is created.
-    Decoder(ReceiveHitControl & receiveHitControl, GameTimeControl & gameTimeControl, RegisterControl & registerControl, TransferControl & transferControl):
+    Decoder(ReceiveHitControl & receiveHitControl, GameTimeControl & gameTimeControl, RegisterControl & registerControl, TransferControl & transferControl, GameInfo & gameInfo):
     task("DecoderTask"),
     dataInChannel(this, "dataInChannel"),
     receiveHitControl(receiveHitControl),
     gameTimeControl(gameTimeControl),
     registerControl(registerControl),
-    transferControl(transferControl)
+    transferControl(transferControl),
+    gameInfo(gameInfo)
     {}
 
 /// \brief
@@ -94,7 +97,8 @@ private:
                 case DECODING:
                     switch(subState){
                         case DEFAULT:
-                            if(data==previousData){ //All data is sent twice, to increase succes rate. We dont want to do everything twice so we make sure to check first. 
+                            if(data>>10==(long long int)gameInfo.getPlayerID()){
+                            }else if(data==previousData){ //All data is sent twice, to increase succes rate. We dont want to do everything twice so we make sure to check first. 
                                 data=0xffff;//The message can/should never be 0xffff so we can use that to make sure this is never true more than twice in a row.
                                // hwlib::cout<<"DOUBLE: "<<hwlib::bin<<data<<hwlib::dec<<"\n";
                                //If someone is shot by the same player twice things should still mostly work even if one of the two messages is lost somewhere, it will simply continue on the second of the two.

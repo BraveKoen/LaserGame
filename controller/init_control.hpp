@@ -210,7 +210,7 @@ private:
             transferControl.transferCommand();
             // mainState = MainState::CommandSelection;
         } else if (buttonID == '*') {
-            sendControl.sendMessage(0b1000'10000);
+            sendControl.sendMessage(0b10000);
             display.displayMessage(
                 "\f\vTransfer\ncommand sent!",
                 Display::Font::Mode8x8
@@ -229,9 +229,9 @@ private:
     }
 
     void initCountdownInput() {
-        message = "\f\vEnter count-\ndown (5-30): ";
+        message = "\f\vEnter count-\ndown (5-15): ";
         minTime = 5;
-        maxTime = 30;
+        maxTime = 15;
         confGameTime = false;
     }
 

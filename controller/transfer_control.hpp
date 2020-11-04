@@ -57,11 +57,11 @@ private:
                 case ACTIVE:
                     auto array_hits = gameInfo.getHits();
                     hwlib::cout << "Player data: "<< gameInfo.getPlayerID() << "\n";
-                    for(auto hit : array_hits){
-                        if(hit[1] == 0){
+                    for(int i=0; i<gameInfo.getHitCount(); i++){
+                        if(array_hits[i][1] == 0){
                             break;
                         }
-                        hwlib::cout << "Player: " << hit[0] << " Damage done: "<< hit[1]<< "\n";
+                        hwlib::cout << "Hit By Player " << array_hits[i][0] << ", for "<< array_hits[i][1]<< " damage\n";
                     }
                     state = INACTIVE;
                     break;

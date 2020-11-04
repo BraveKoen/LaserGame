@@ -37,6 +37,8 @@ public:
     
     int getTime() { return gameTimePool.read(); }
 
+    int getHitCount() { return count; }
+
     void registerHit(uint8_t playerID,uint8_t damage){
         std::array<std::array<uint8_t, 2>,100> tempHits= hitsPool.read();
         tempHits[count][0] = playerID;

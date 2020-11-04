@@ -29,12 +29,12 @@ public:
     /// This constructor has receiveHitControl, gameTimeControl, registerControl and transferControl by reference.
     /// IrReceiver is created with pin d8.
     /// clock_200us, timer_4ms are created.
-    ReceiveControl(ReceiveHitControl & receiveHitControl, GameTimeControl & gameTimeControl, RegisterControl & registerControl, TransferControl & transferControl):
+    ReceiveControl(ReceiveHitControl & receiveHitControl, GameTimeControl & gameTimeControl, RegisterControl & registerControl, TransferControl & transferControl, GameInfo & gameInfo):
     task("ReceiveTask"),
     clock_200us(this, 200, "200 us clock"), 
     timer_4ms(this, "4 ms timer"),
     irReceiver(hwlib::target::pins::d8),
-    decoder(receiveHitControl, gameTimeControl, registerControl, transferControl)
+    decoder(receiveHitControl, gameTimeControl, registerControl, transferControl, gameInfo)
     {}
 
 private:

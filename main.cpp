@@ -73,7 +73,8 @@ int main() {
         receiveHitControl,
         gameTimeControl,
         registerControl,
-        transferControl
+        transferControl,
+        gameInfo
     );
     rtos::run();
 }

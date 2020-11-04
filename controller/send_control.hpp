@@ -70,6 +70,7 @@ private:
                     message = message<<5;
                     message += ((message>>10) & 0b11111) ^ ((message>>5) & 0b11111);
                     counter = 0;
+                    //hwlib::cout<<hwlib::bin<<message<<hwlib::dec<<"\n";
                     state = SENDING;
                     break;
 
