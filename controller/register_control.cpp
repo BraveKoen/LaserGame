@@ -83,7 +83,7 @@ void RegisterControl::main(){
                             substate = ENTERINGWEAPONTYPE;
                         }else if(button=='C' and playerID == 0){
                             initControl.startMenu();
-                            state = INACTIVE;     // change this
+                            state = INACTIVE;
                         }else{
                             state = MENUSELECT;
                         }
@@ -111,7 +111,8 @@ void RegisterControl::main(){
                                 );
                                 hwlib::wait_ms(1'000);
                                 display.displayMessage(
-                                    "\r                ",
+                                    "\r
+                                    ",
                                     Display::Font::Mode8x8
                                 );
                             }
