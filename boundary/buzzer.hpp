@@ -85,7 +85,7 @@ private:
                             buzzerPin.write(false);
                             state = INACTIVE;
                         }
-                        break
+                        break;
                     }
                     break;
             }
